@@ -32,7 +32,7 @@ constexpr uint16_t DSHOT_HIGH = 0.75 * DMA_WRAP;
 constexpr uint32_t DSHOT_CMD_SIZE = 16;
 
 // Frame = DShot command + 0 padding
-constexpr size_t DSHOT_FRAME_LENGTH = DSHOT_CMD_SIZE + 4;
+constexpr unsigned int DSHOT_FRAME_LENGTH = DSHOT_CMD_SIZE + 4;
 
 /*! \brief Maximum time between DShot commands in micro secs
  *  \ingroup config
@@ -44,3 +44,9 @@ constexpr size_t DSHOT_FRAME_LENGTH = DSHOT_CMD_SIZE + 4;
  * TODO: Assert DShot_SPEED / DSHOT_CMD_SIZE > DMA_ALARM_PERIOD
  */
 constexpr uint32_t DMA_ALARM_PERIOD = 1000 / 7;
+
+// --- Throttle ---
+
+constexpr uint16_t ARM_THROTTLE = 300;  // < 50% MAX_THROTTLE
+constexpr uint16_t MAX_THROTTLE = 2047; // 2^12 - 1
+constexpr uint16_t THROTTLE_ZERO = 48;  // 0 Throttle code

@@ -1,6 +1,8 @@
 #include <Arduino.h>
 
 #include "config.h"
+#include "tts.h"
+#include "logging.h"
 
 #include "pico/time.h"
 
@@ -18,12 +20,19 @@ uint32_t dma_buffer[DSHOT_FRAME_LENGTH] = {0};
 void send_dshot_frame(bool = true);
 
 // DMA config
-int dma_chan = dma_claim_unused_channel(true);
-dma_channel_config dma_conf = dma_channel_get_default_config(dma_chan);
+// int dma_chan = dma_claim_unused_channel(true);
+// dma_channel_config dma_conf = dma_channel_get_default_config(dma_chan);
+
+int dma_chan = tts::dma_chan;
+dma_channel_config dma_conf = tts::dma_conf;
+
 
 // PWM config
-uint pwm_slice_num = pwm_gpio_to_slice_num(MOTOR_GPIO);
-uint pwm_channel = pwm_gpio_to_channel(MOTOR_GPIO);
+// uint pwm_slice_num = pwm_gpio_to_slice_num(MOTOR_GPIO);
+// uint pwm_channel = pwm_gpio_to_channel(MOTOR_GPIO);
+
+uint pwm_slice_num = tts::pwm_slice_num;
+uint pwm_channel = tts::pwm_channel;
 
 // DMA Alarm config
 // ISR to send DShot frame over DMA
@@ -43,12 +52,15 @@ struct repeating_timer send_frame_rt;
 // Create alarm pool
 alarm_pool_t *pico_alarm_pool = alarm_pool_create(DMA_ALARM_NUM, PICO_TIME_DEFAULT_ALARM_POOL_MAX_TIMERS);
 
+uint16_t throttle_code = tts::throttle_code;
+uint16_t telemtry = tts::telemetry;
+
 void setup()
 {
     Serial.begin(9600);
 
     // Flash LED
-    utils::flash_led(LED_BUILTIN);
+    logging::flash_led(LED_BUILTIN);
 
     // --- Setup PWM config
     // Initialise PWM to ouput 0 signal
@@ -112,59 +124,9 @@ void setup()
 int incomingByte;
 uint32_t temp_dma_buffer[DSHOT_FRAME_LENGTH] = {0};
 
-/// NOTE
-// I think arm_sequence should be coded such that it returns
-// a throttle code. This will make the main loop more efficient
-// Note that the state of the arm sequence will still need
-// to be tracked somehow.
-// This could be done efficiently using the first 16 bits!?s
 
-/*
-    Function to perform arm sequence
-    This tracks the sequence of commands using a state machine?
-    Incr throttle from 0 to 750
-    Decr throttle from 750 to 48 (incl)
-    // TODO: Check if command can start from 48
-    // TODO: Check if command length can be shortened by skipping
-*/
-constexpr uint16_t ARM_THROTTLE = 300; // Max is 2000 (or 1999?)
-constexpr uint16_t MAX_THROTTLE = 2000;
-constexpr uint16_t THROTTLE_ZERO = 48; // 0 Throttle code
-uint16_t arm_sequence(const uint16_t idx)
-{
 
-    // Send 100 values spaced between 0 to ARM_THROTTLE
-    uint n = 50;
-    if (idx <= n)
-    {
-        return 48 + idx * (ARM_THROTTLE - 48) / n;
-    }
 
-    // Increase throttle till 25%
-    // if (idx <= ARM_THROTTLE)
-    // {
-    //     return idx;
-    // }
-    // Decrease throttle to 0
-    // else if (idx <= 2 * ARM_THROTTLE - 48)
-    // {
-    //     return 2 * ARM_THROTTLE - idx;
-    // }
-    // // Return 0 for a couple more times
-    // else if (idx <= 2 * ARM_THROTTLE - 46)
-    // {
-    //     return 48;
-    // }
-    // Increase throttle back up
-    // else if (idx <= 3 * ARM_THROTTLE)
-    // {
-    //     return idx - 2 * ARM_THROTTLE;
-    // }
-    return 0;
-}
-
-uint16_t throttle_code = 0;
-uint16_t telemtry = 0;
 
 // Helper function to send code to DMA buffer
 uint16_t writes_to_temp_dma_buffer = 0;
@@ -213,69 +175,7 @@ void send_dshot_frame(bool debug)
     // timer_hw->alarm[DMA_ALARM_NUM] = (uint32_t)target;
 }
 
-// Helper function to arm motor
-void arm_motor()
-{
 
-    // Debugging
-    writes_to_temp_dma_buffer = 0;
-    writes_to_dma_buffer = 0;
-
-    uint64_t duration;    // milli seconds
-    uint64_t target_time; // micro seconds
-    uint n = 101 - 1;     // Num of commands to send on rise and fall
-
-    // Send 0 command for 200 ms
-    throttle_code = THROTTLE_ZERO;
-    telemtry = 0;
-    duration = 200; // ms
-    target_time = timer_hw->timerawl + duration * 1000;
-    // TODO: re implement as a timer interrupt
-    while (timer_hw->timerawl < target_time)
-        send_dshot_frame();
-
-    // Increase throttle from 0 from to ARM_THROTTLE for 100 steps
-    // < 20 ms time for Dshot 150, 20 bit frame length, n = 100
-    telemtry = 0;
-    for (uint16_t i = 0; i <= n; ++i)
-    {
-        throttle_code = THROTTLE_ZERO + i * (ARM_THROTTLE - THROTTLE_ZERO) / n;
-        send_dshot_frame();
-    }
-
-    // Send ARM_THROTTLE command for 300 ms
-    throttle_code = ARM_THROTTLE;
-    telemtry = 0;
-    duration = 300; // ms
-    target_time = timer_hw->timerawl + duration * 1000;
-    // TODO: re implement as a timer interrupt
-    while (timer_hw->timerawl < target_time)
-        send_dshot_frame();
-
-    // Decrease throttle to 48
-    // < 20 ms time for Dshot 150, 20 bit frame length, n = 100
-    telemtry = 0;
-    for (uint16_t i = n; i < n; --i)
-    {
-        throttle_code = THROTTLE_ZERO + i * (ARM_THROTTLE - THROTTLE_ZERO) / n;
-        send_dshot_frame();
-    }
-
-    // Send THROTTLE_ZERO for 500 ms
-    throttle_code = THROTTLE_ZERO;
-    telemtry = 0;
-    duration = 500; // ms
-    target_time = timer_hw->timerawl + duration * 1000;
-    // TODO: re implement as a timer interrupt
-    while (timer_hw->timerawl < target_time)
-        send_dshot_frame();
-
-    Serial.println();
-    Serial.print("Writes to temp dma buffer: ");
-    Serial.println(writes_to_temp_dma_buffer);
-    Serial.print("Writes to dma buffer: ");
-    Serial.println(writes_to_dma_buffer);
-}
 
 void ramp_motor()
 {
@@ -317,7 +217,7 @@ void loop()
         // l (led)
         if (incomingByte == 108)
         {
-            utils::flash_led(LED_BUILTIN);
+            logging::flash_led(LED_BUILTIN);
         }
 
         // a (arm)
@@ -326,7 +226,7 @@ void loop()
             // Disable timer
             cancel_repeating_timer(&send_frame_rt);
             // Arm motor
-            arm_motor();
+            utils::arm_motor();
             // Re-enable timer
             dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(pico_alarm_pool, DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL, &send_frame_rt);
             Serial.print("Re-enabled repeating DMA alarm: ");
