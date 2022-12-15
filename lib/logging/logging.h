@@ -6,6 +6,7 @@ namespace logging
     void all_setup();
 
     /*! \brief DShot settings: wrap, low, high
+     *  Ambiguous whether this should go in pwm_setup or dshot setup
      */
     void dshot_setup();
 

@@ -24,7 +24,8 @@ void send_dshot_frame(bool = true);
 // dma_channel_config dma_conf = dma_channel_get_default_config(dma_chan);
 
 int dma_chan = tts::dma_chan;
-dma_channel_config dma_conf = tts::dma_conf;
+// dma_channel_config dma_conf = tts::dma_conf;
+dma_channel_config dma_conf = dma_channel_get_default_config(tts::dma_chan);
 
 
 // PWM config
@@ -52,8 +53,8 @@ struct repeating_timer send_frame_rt;
 // Create alarm pool
 alarm_pool_t *pico_alarm_pool = alarm_pool_create(DMA_ALARM_NUM, PICO_TIME_DEFAULT_ALARM_POOL_MAX_TIMERS);
 
-uint16_t throttle_code = tts::throttle_code;
-uint16_t telemtry = tts::telemetry;
+uint16_t throttle_code = 0;
+uint16_t telemtry = 0;
 
 void setup()
 {
@@ -66,7 +67,7 @@ void setup()
     // Initialise PWM to ouput 0 signal
     // TODO: start PWM after DMA config
     gpio_set_function(MOTOR_GPIO, GPIO_FUNC_PWM);
-    pwm_set_wrap(pwm_slice_num, DMA_WRAP);
+    pwm_set_wrap(pwm_slice_num, DSHOT_PWM_WRAP);
     pwm_set_chan_level(pwm_slice_num, pwm_channel, 0);    // Set PWM to 0 output
     pwm_set_clkdiv(pwm_slice_num, DEBUG ? 240.0f : 1.0f); // Should run at 500 kHz for cpu-clck = 120 Mhz
     pwm_set_enabled(pwm_slice_num, true);
@@ -87,33 +88,10 @@ void setup()
     delay(1500);
 
     // Print General Settings
-    Serial.print("LED_BUILTIN GPIO: ");
-    Serial.println(LED_BUILTIN);
-    Serial.print("MOTOR GPIO: ");
-    Serial.println(MOTOR_GPIO);
-
-    Serial.print("PWM Slice num: ");
-    Serial.println(pwm_slice_num);
-    Serial.print("PWM Channel: ");
-    Serial.println(pwm_channel);
-
-    Serial.print("DMA channel: ");
-    Serial.println(dma_chan);
-    Serial.print("DMA Buffer Length: ");
-    Serial.println(DSHOT_FRAME_LENGTH);
+    logging::all_setup();
 
     Serial.print("DMA Repeating Timer Setup: ");
-    Serial.print(dma_alarm_rt_state);
-    Serial.print("\tDMA Alarm Period (us): ");
-    Serial.println(DMA_ALARM_PERIOD);
-
-    // Print DShot settings
-    Serial.print("DShot: Wrap: ");
-    Serial.print(DMA_WRAP);
-    Serial.print(" Low: ");
-    Serial.print(DSHOT_LOW);
-    Serial.print(" High: ");
-    Serial.println(DSHOT_HIGH);
+    Serial.println(dma_alarm_rt_state);
 
     Serial.print("Initial throttle: ");
     Serial.print(throttle_code);
@@ -125,12 +103,9 @@ int incomingByte;
 uint32_t temp_dma_buffer[DSHOT_FRAME_LENGTH] = {0};
 
 
-
-
-
 // Helper function to send code to DMA buffer
-uint16_t writes_to_temp_dma_buffer = 0;
-uint16_t writes_to_dma_buffer = 0;
+volatile uint16_t writes_to_temp_dma_buffer = 0;
+volatile uint16_t writes_to_dma_buffer = 0;
 void send_dshot_frame(bool debug)
 {
     // Stop timer interrupt JIC
@@ -205,10 +180,17 @@ void ramp_motor()
     // TODO: re implement as a timer interrupt
     while (timer_hw->timerawl < target_time)
         send_dshot_frame();
+    
+    Serial.print("Write to temp dma buffer: ");
+    Serial.println(writes_to_temp_dma_buffer);
+
+    Serial.print("Write to dma buffer: ");
+    Serial.println(writes_to_dma_buffer);
 }
 
 void loop()
 {
+
     if (Serial.available() > 0)
     {
         incomingByte = Serial.read();

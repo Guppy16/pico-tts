@@ -2,12 +2,25 @@
 #include "config.h"
 #include "tts.h"
 
+void logging::all_setup()
+{
+    logging::flash_led();
+
+    logging::dshot_setup();
+
+    logging::gpio_setup();
+
+    logging::pwm_setup();
+
+    logging::dma_setup();
+}
+
 void logging::dshot_setup()
 {
     Serial.println("\nDShot Setup");
 
     Serial.print("Wrap: ");
-    Serial.print(DMA_WRAP);
+    Serial.print(DSHOT_PWM_WRAP);
 
     Serial.print("\tLow: ");
     Serial.print(DSHOT_LOW);
@@ -60,6 +73,8 @@ void logging::dma_setup()
 
 void logging::flash_led(const pin_size_t &pin)
 {
+    Serial.print("Flashing LED on GPIO: ");
+    Serial.println(LED_BUILTIN);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
     delay(1000);

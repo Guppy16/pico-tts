@@ -21,6 +21,11 @@ namespace tts
     extern uint pwm_slice_num;
     extern uint pwm_channel;
 
+    /*! \brief setup PWM config
+     *  
+     */
+    void pwm_setup();
+
     // DShot Command
     extern uint16_t throttle_code;
     extern uint16_t telemetry;

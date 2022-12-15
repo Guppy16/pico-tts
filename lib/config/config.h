@@ -11,22 +11,22 @@
 #define DEBUG 0
 
 #if DEBUG
-#define MOTOR_GPIO 14 // BUILTIN_LED
+#define MOTOR_GPIO 25 // BUILTIN_LED
 #else
-#define MOTOR_GPIO 25
+#define MOTOR_GPIO 14
 #endif
 
 // --- DMA Variables
 // Note that these should be cast uint32_t when sent to the slice
 
-// WRAP = Total number of counts in PWM cycle
-constexpr uint16_t DMA_WRAP = DEBUG ? (1 << 16) - 1 : 1000 * MCU_FREQ / DSHOT_SPEED;
+// WRAP = Total number of counts in PWM cycle for sending a DShot bit
+constexpr uint16_t DSHOT_PWM_WRAP = DEBUG ? (1 << 16) - 1 : 1000 * MCU_FREQ / DSHOT_SPEED;
 
 // Number of counts to represent a digital low
-constexpr uint16_t DSHOT_LOW = 0.37 * DMA_WRAP;
+constexpr uint16_t DSHOT_LOW = 0.37 * DSHOT_PWM_WRAP;
 
 // Number of counts to represent a digital high
-constexpr uint16_t DSHOT_HIGH = 0.75 * DMA_WRAP;
+constexpr uint16_t DSHOT_HIGH = 0.75 * DSHOT_PWM_WRAP;
 
 // DShot cmd size is defined to be 16
 constexpr uint32_t DSHOT_CMD_SIZE = 16;
@@ -43,7 +43,7 @@ constexpr unsigned int DSHOT_FRAME_LENGTH = DSHOT_CMD_SIZE + 4;
  *
  * TODO: Assert DShot_SPEED / DSHOT_CMD_SIZE > DMA_ALARM_PERIOD
  */
-constexpr uint32_t DMA_ALARM_PERIOD = 1000 / 7;
+constexpr uint32_t DMA_ALARM_PERIOD = 1000 / 1;
 
 // --- Throttle ---
 

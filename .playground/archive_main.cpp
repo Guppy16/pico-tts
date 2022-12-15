@@ -11,9 +11,9 @@
 
 // Note that these should be cast uint32_t when sent to the slice
 // WRAP = Total number of counts in PWM cycle
-constexpr uint16_t DMA_WRAP = DEBUG ? (1 << 16) - 1 : 1000 * MCU_FREQ / DSHOT_SPEED;
-constexpr uint16_t DSHOT_LOW = 0.37 * DMA_WRAP;
-constexpr uint16_t DSHOT_HIGH = 0.75 * DMA_WRAP;
+constexpr uint16_t DSHOT_PWM_WRAP = DEBUG ? (1 << 16) - 1 : 1000 * MCU_FREQ / DSHOT_SPEED;
+constexpr uint16_t DSHOT_LOW = 0.37 * DSHOT_PWM_WRAP;
+constexpr uint16_t DSHOT_HIGH = 0.75 * DSHOT_PWM_WRAP;
 
 constexpr uint32_t cmd_nums = 1403;
 constexpr uint32_t cmd_size = 20;
@@ -111,7 +111,7 @@ void setup()
   // Without config method
   // NOTE: pwm should start after DMA initialised!
   // OR can initialise PWM with 0 channel level
-  pwm_set_wrap(pwm_slice_num, DMA_WRAP);
+  pwm_set_wrap(pwm_slice_num, DSHOT_PWM_WRAP);
   pwm_set_chan_level(pwm_slice_num, pwm_channel, 0);
   pwm_set_clkdiv(pwm_slice_num, DEBUG ? 240.0f : 1.0f); // Should run at 500 kHz for cpu-clck = 120 Mhz
   pwm_set_enabled(pwm_slice_num, true);
@@ -160,7 +160,7 @@ void setup()
 
   // Print DShot settings
   Serial.print("DShot: Wrap: ");
-  Serial.print(DMA_WRAP);
+  Serial.print(DSHOT_PWM_WRAP);
   Serial.print(" Low: ");
   Serial.print(DSHOT_LOW);
   Serial.print(" High: ");
