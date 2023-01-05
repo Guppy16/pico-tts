@@ -70,6 +70,22 @@ NOTE: 32 bit time is used
 - NOTE that this has been the cause of many accidental failures in the past..
 
 ---
+## To Do
+- :tick: Transfer PWM setup to `tts/`
+- [ ] Transfer DMA setup to `tts/`
+- [ ] Transfer repeating timer to `tts/`
+- [ ] Transfer print config to logging / utils? Maybe check `refactor` branch
+- [ ] Rename `config.h` to `dshot_config.h`. Wrap variables in a namespace and remove prefix `DSHOT_`.
+- [ ] `tts.h` can be renamed `dshot_hw.h`?
+- [ ] Transfer dma frame sending to `shoot.h`
+
+## Backlog
+- [ ] attempt proper arm sequence
+- [ ] Try: DSHOT_SPEED = DEBUG ? 0.008 : 1200 kHz
+- [ ] Add validation to ensure PWM, DMA, repeating timer have been setup correctly
+- [ ] Currently dma writes to a PWM counter compare. This actually writes to two dma channels (because upper / lower 16 bits are separate counters). Hence we render one dma channel useless. Is it possible to implement this in a better way?
+
+---
 ## Functions
 
 - :tick: calculating duty cycle of bits from dshot speed
@@ -89,4 +105,3 @@ Command: 1, Tel: 1
 0x0033
 Transmitted from left to right (I think)
 LLLL LLLL LLHH LLHH
-
