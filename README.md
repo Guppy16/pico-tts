@@ -70,6 +70,14 @@ NOTE: 32 bit time is used
 - NOTE that this has been the cause of many accidental failures in the past..
 
 ---
+## Bidirectional DShot
+
+[The missing handbook](https://brushlesswhoop.com/dshot-and-bidirectional-dshot/#bidirectional-dshot) explains this well. 
+
+- Note that we need to find out the firmware version of the ESCs to see if it supports bi-directional DShot. BlHeli-32 supports bi-directional dshot for FW 32.7.0 and higher
+- 
+
+---
 ## To Do
 - :tick: Transfer PWM setup to `tts/`
 - [ ] Transfer DMA setup to `tts/`
