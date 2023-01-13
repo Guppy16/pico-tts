@@ -30,6 +30,20 @@ NOTE: need a good source for this.
 1 - 47: reserved for special use
 48 - 2047: Throttle (2000 steps of precision)
 
+### Telemetry
+UART port
+Returns 10 8-bit bytes sent with 115200 baud and 3.6V.
+Byte 0: Temperature 
+Byte 1: Voltage high byte
+Byte 2: Voltage low byte
+Byte 3: Current high byte
+Byte 4: Current low byte
+Byte 5: Consumption high byte
+Byte 6: Consumption low byte
+Byte 7: Rpm high byte
+Byte 8: Rpm low byte
+Byte 9: 8-bit CRC
+
 ---
 ## Scheme
 
@@ -71,6 +85,9 @@ NOTE: 32 bit time is used
 
 ---
 ## To Do
+- [ ] Setup a UART port
+- [ ] use a simple dshot cmd with telemetry to see if uart outputs
+
 - :tick: Transfer PWM setup to `tts/`
 - [ ] Transfer DMA setup to `tts/`
 - [ ] Transfer repeating timer to `tts/`
