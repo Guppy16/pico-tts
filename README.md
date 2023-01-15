@@ -88,6 +88,8 @@ NOTE: 32 bit time is used
 - [ ] Setup a UART port
 - [ ] use a simple dshot cmd with telemetry to see if uart outputs
 
+- [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be).
+
 - :tick: Transfer PWM setup to `tts/`
 - [ ] Transfer DMA setup to `tts/`
 - [ ] Transfer repeating timer to `tts/`
