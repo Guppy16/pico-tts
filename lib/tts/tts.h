@@ -4,6 +4,11 @@
 #include "pico/time.h"
 #include "hardware/pwm.h"
 #include "hardware/dma.h"
+#include "hardware/uart.h"
+
+#define GPIO_MOTOR_TELEMETRY 13
+#define UART_MOTOR_TELEMETRY uart0 // Note there are only two uarts available
+#define BAUDRATE_MOTOR_TELEMETRY 115200
 
 #include "config.h"
 
@@ -36,12 +41,21 @@ namespace tts
      */
     void dma_setup();
 
+    // Telemetry config
+    
+    /*! \brief setup single wire telemetry uart
+    */
+    void uart_telemetry_setup();
+    extern uint _telem_baudrate;
+
     // Debugging
 
     void print_gpio_setup();
     void print_dshot_setup();
+    void print_alarm_pool_setup();
     void print_pwm_setup();
     void print_dma_setup();
+    void print_uart_telem_setup();
 
     // Create alarm pool
     extern alarm_pool_t *pico_alarm_pool;

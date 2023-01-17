@@ -3,11 +3,6 @@
 #include "shoot.h"
 #include "utils.h"
 
-#include "hardware/uart.h"
-
-#define GPIO_MOTOR_TELEMETRY 13
-#define UART_MOTOR_TELEMETRY uart0
-
 void setup()
 {
     Serial.begin(115200);
@@ -28,36 +23,17 @@ void setup()
     // repeating timer on key press (e.g. a for arm)
     shoot::rt_setup();
 
-    // --- Setup UART
-    // Initialise uart 0 (NOTE: there are only two available)
-    uint telem_baudrate = uart_init(UART_MOTOR_TELEMETRY, 115200);
-
-    // Set GPIO pin mux for RX
-    gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
-    // Set pull up
-    // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+    // Setup UART
+    tts::uart_telemetry_setup();
 
     delay(1500);
-
-    Serial.print("Baudrate: ");
-    Serial.println(telem_baudrate);
-    // Check if gpio is pulled up
-    Serial.print("Motor Telemetry gpio pull: ");
-    Serial.print("Up: ");
-    Serial.print(gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY));
-
-    Serial.print("Down: ");
-    Serial.print(gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 
     tts::print_gpio_setup();
     tts::print_dshot_setup();
     tts::print_pwm_setup();
     tts::print_dma_setup();
-
-    Serial.print("Initial throttle: ");
-    Serial.print(shoot::throttle_code);
-    Serial.print("\tInitial telemetry: ");
-    Serial.println(shoot::telemetry);
+    tts::print_uart_telem_setup();
+    shoot::print_shoot_setup();
 }
 
 int incomingByte;
@@ -94,9 +70,9 @@ void loop()
         //     // Arm motor
         //     arm_motor();
         //     // Re-enable timer
-        //     dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(pico_alarm_pool, DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL, &send_frame_rt);
+        //     _dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(pico_alarm_pool, DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL, &send_frame_rt);
         //     Serial.print("Re-enabled repeating DMA alarm: ");
-        //     Serial.println(dma_alarm_rt_state);
+        //     Serial.println(_dma_alarm_rt_state);
 
         //     return;
         // }
@@ -141,9 +117,9 @@ void loop()
         //     // Ramp up to speed ARM_THROTTLE + 100
         //     ramp_motor();
         //     // Re-enable timer
-        //     dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(pico_alarm_pool, DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL, &send_frame_rt);
+        //     _dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(pico_alarm_pool, DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL, &send_frame_rt);
         //     Serial.print("Re-enabled repeating DMA alarm: ");
-        //     Serial.println(dma_alarm_rt_state);
+        //     Serial.println(_dma_alarm_rt_state);
         // }
 
         // r - rise

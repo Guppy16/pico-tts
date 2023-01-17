@@ -38,10 +38,25 @@ void tts::dma_setup()
     channel_config_set_dreq(&tts::dma_config, DREQ_PWM_WRAP0 + tts::pwm_slice_num);
 }
 
+// Telemetry
+
+uint tts::_telem_baudrate;
+
+void tts::uart_telemetry_setup()
+{
+    // Initialise and Set baudrate
+    tts::_telem_baudrate = uart_init(UART_MOTOR_TELEMETRY, 115200);
+
+    // Set GPIO pin mux for RX
+    gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
+    
+    // Set pull up
+    // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+}
+
 // Alarm pool
 
 alarm_pool_t *tts::pico_alarm_pool = alarm_pool_create(DMA_ALARM_NUM, PICO_TIME_DEFAULT_ALARM_POOL_MAX_TIMERS);
-
 
 // Debugging
 
@@ -72,6 +87,15 @@ void tts::print_dshot_setup()
     Serial.println();
 }
 
+void tts::print_alarm_pool_setup()
+{
+    Serial.println("\nAlarm Pool Setup");
+    Serial.println("Not implmeneted yet");
+
+    // For some reason, this doesn't work?
+    // Serial.println((tts::pico_alarm_pool)->hardware_alarm_num);
+}
+
 void tts::print_pwm_setup()
 {
     Serial.println("\nPWM Setup");
@@ -92,13 +116,22 @@ void tts::print_dma_setup()
 
     Serial.print("Buffer Length: ");
     Serial.println(DSHOT_FRAME_LENGTH);
+}
 
-    Serial.print("Repeating Timer Setup: ");
-    Serial.println("Not implemented");
-    // Serial.print(tts::dma_alarm_rt_state);
+void tts::print_uart_telem_setup()
+{
+    Serial.println("\nUART telemetry setup");
 
-    Serial.print("Alarm Period (us): ");
-    Serial.println(DMA_ALARM_PERIOD);
+    Serial.print("Baudrate: ");
+    Serial.println(tts::_telem_baudrate);
+
+    // Check if gpio is pulled up
+    Serial.print("Gpio pull: ");
+    Serial.print("Up: ");
+    Serial.print(gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY));
+
+    Serial.print("\tDown: ");
+    Serial.print(gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 }
 
 // Depracated
