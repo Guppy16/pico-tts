@@ -41,7 +41,7 @@ namespace shoot
     // --- Repeating timer setup
 
     // Keep track of repeating timer status
-    extern bool dma_alarm_rt_state;
+    extern bool _dma_alarm_rt_state;
 
     // Setup a repeating timer configuration
     extern struct repeating_timer send_frame_rt;
@@ -52,4 +52,6 @@ namespace shoot
     // ISR to send DShot frame over DMA
     bool repeating_send_dshot_frame(struct repeating_timer *rt);
 
+    // Debugging
+    void print_shoot_setup();
 }

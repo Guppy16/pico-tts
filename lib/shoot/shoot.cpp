@@ -10,15 +10,15 @@ uint16_t shoot::telemetry = 0;
 uint16_t shoot::writes_to_dma_buffer = 0;
 uint16_t shoot::writes_to_temp_dma_buffer = 0;
 
-bool shoot::dma_alarm_rt_state = false;
+bool shoot::_dma_alarm_rt_state = false;
 struct repeating_timer shoot::send_frame_rt;
 
 void shoot::rt_setup()
 {
-    shoot::dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(tts::pico_alarm_pool, DMA_ALARM_PERIOD, shoot::repeating_send_dshot_frame, NULL, &shoot::send_frame_rt);
+    shoot::_dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(tts::pico_alarm_pool, DMA_ALARM_PERIOD, shoot::repeating_send_dshot_frame, NULL, &shoot::send_frame_rt);
 
     Serial.print("\nDMA Repeating Timer Setup: ");
-    Serial.print(shoot::dma_alarm_rt_state);
+    Serial.print(shoot::_dma_alarm_rt_state);
 }
 
 void shoot::send_dshot_frame(bool debug)
@@ -75,4 +75,23 @@ bool shoot::repeating_send_dshot_frame(struct repeating_timer *rt)
     // CAN DO: Use rt-> for debug
     // Return true so that timer repeats
     return true;
+}
+
+void shoot::print_shoot_setup()
+{
+    Serial.println("\nRepeating Timer Config");
+    Serial.print("Repeating Timer Setup: ");
+    Serial.print(shoot::_dma_alarm_rt_state);
+    Serial.print("Alarm ID: ");
+    Serial.print(shoot::send_frame_rt.alarm_id);
+    Serial.print("Alarm Period (us): ");
+    Serial.print("Expected: ");
+    Serial.println(DMA_ALARM_PERIOD);
+    Serial.print("\tActual: ");
+    Serial.println(shoot::send_frame_rt.delay_us);
+
+    Serial.print("Initial Throttle Code: ");
+    Serial.print(shoot::throttle_code);
+    Serial.print("\tTelemetry: ");
+    Serial.println(shoot::telemetry);
 }
