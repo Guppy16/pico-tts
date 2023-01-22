@@ -13,19 +13,16 @@ uint16_t shoot::writes_to_temp_dma_buffer = 0;
 bool shoot::_dma_alarm_rt_state = false;
 struct repeating_timer shoot::send_frame_rt;
 
-void shoot::rt_setup()
+bool shoot::_uart_telem_rt_state = false;
+struct repeating_timer shoot::uart_telem_req_rt;
+
+void shoot::dshot_rt_setup()
 {
     shoot::_dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(tts::pico_alarm_pool, DMA_ALARM_PERIOD, shoot::repeating_send_dshot_frame, NULL, &shoot::send_frame_rt);
-
-    Serial.print("\nDMA Repeating Timer Setup: ");
-    Serial.print(shoot::_dma_alarm_rt_state);
 }
 
 void shoot::send_dshot_frame(bool debug)
 {
-    // Stop timer interrupt JIC
-    // irq_set_enabled(DMA_ALARM_IRQ, false);
-
     // TODO: add more verbose debugging
     // NOTE: caution as this function is executed as an interrupt service routine
     if (debug)
@@ -36,8 +33,8 @@ void shoot::send_dshot_frame(bool debug)
 
     // IF DMA is busy, then write to temp_dma_buffer
     // AND wait for DMA buffer to finish transfer
-    // (NOTE: waiting is risky because this is used in an interrupt)
     // Then copy the temp buffer to dma buffer
+    // (NOTE: waiting is risky because this is used in an interrupt)
     if (dma_channel_is_busy(tts::dma_channel))
     {
         DShot::command_to_pwm_buffer(shoot::throttle_code, shoot::telemetry, shoot::temp_dma_buffer, DSHOT_LOW, DSHOT_HIGH, tts::pwm_channel);
@@ -60,21 +57,68 @@ void shoot::send_dshot_frame(bool debug)
         DSHOT_FRAME_LENGTH,
         true);
 
-    // Restart interrupt
-    // irq_set_enabled(DMA_ALARM_IRQ, true);
-    // NOTE: Alarm is only 32 bits
-    // so, be careful if delay is more than that
-    // uint64_t target = timer_hw->timerawl + DMA_ALARM_PERIOD;
-    // timer_hw->alarm[DMA_ALARM_NUM] = (uint32_t)target;
+    // Reset telemetry to limit the number of requests
+    // NOTE: should telem be volatile now?
+    shoot::telemetry = 0;
 }
 
 bool shoot::repeating_send_dshot_frame(struct repeating_timer *rt)
 {
+    /// NOTE: Can use Use rt->... for debug
+
     // Send DShot frame
     shoot::send_dshot_frame(false);
-    // CAN DO: Use rt-> for debug
+
     // Return true so that timer repeats
     return true;
+}
+
+
+// Telemetry
+
+uint shoot::_telem_baudrate;
+
+void uart_telem_irq(void)
+{
+    // Clear uart irq?
+
+    // Read uart
+
+    // 
+}
+
+bool shoot::repeating_uart_telem_req(struct repeating_timer *rt)
+{
+    // Set telemetry
+    shoot::telemetry = 1;
+
+    // return true to repeat timer
+    return true;
+}
+
+void shoot::uart_telemetry_setup()
+{
+    // Initialise and Set baudrate
+    shoot::_telem_baudrate = uart_init(UART_MOTOR_TELEMETRY, BAUDRATE_MOTOR_TELEMETRY);
+
+    // Set GPIO pin mux for RX
+    gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
+    
+    // Set pull up
+    // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+
+    // Setup repeating timer for uart telem request
+    shoot::_uart_telem_rt_state = alarm_pool_add_repeating_timer_us(tts::pico_alarm_pool, UART_TELEMETRY_PERIOD, shoot::repeating_uart_telem_req, NULL, &shoot::uart_telem_req_rt);
+
+    /// -- TODO:
+    /// MAYBES:
+    // check if it has a shared handler
+    // check it's priority
+
+    // Add exclusive interrupt handler to uart0 (UART_MOTOR_TELEMETRY), UART0_IRQ
+
+    // Enable uart interrupt (uart_set_irq_enables)
+    
 }
 
 void shoot::print_shoot_setup()
@@ -94,4 +138,21 @@ void shoot::print_shoot_setup()
     Serial.print(shoot::throttle_code);
     Serial.print("\tTelemetry: ");
     Serial.println(shoot::telemetry);
+}
+
+
+void shoot::print_uart_telem_setup()
+{
+    Serial.println("\nUART telemetry setup");
+
+    Serial.print("Baudrate: ");
+    Serial.println(shoot::_telem_baudrate);
+
+    // Check if gpio is pulled up
+    Serial.print("Gpio pull: ");
+    Serial.print("Up: ");
+    Serial.print(gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY));
+
+    Serial.print("\tDown: ");
+    Serial.print(gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 }

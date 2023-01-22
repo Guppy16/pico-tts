@@ -21,10 +21,10 @@ void setup()
     // Set repeating timer
     // NOTE: this can be put in main loop to start
     // repeating timer on key press (e.g. a for arm)
-    shoot::rt_setup();
+    shoot::dshot_rt_setup();
 
     // Setup UART
-    tts::uart_telemetry_setup();
+    shoot::uart_telemetry_setup();
 
     delay(1500);
 
@@ -32,7 +32,7 @@ void setup()
     tts::print_dshot_setup();
     tts::print_pwm_setup();
     tts::print_dma_setup();
-    tts::print_uart_telem_setup();
+    shoot::print_uart_telem_setup();
     shoot::print_shoot_setup();
 }
 

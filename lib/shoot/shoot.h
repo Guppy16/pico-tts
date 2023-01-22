@@ -8,6 +8,12 @@
 #include "tts.h"
 
 #include "hardware/irq.h"
+#include "hardware/uart.h"
+
+#define GPIO_MOTOR_TELEMETRY 13
+#define UART_MOTOR_TELEMETRY uart0 // Note there are only two uarts available
+#define BAUDRATE_MOTOR_TELEMETRY 115200
+#define UART_TELEMETRY_PERIOD 1000 // microseconds
 
 namespace shoot
 {
@@ -38,7 +44,7 @@ namespace shoot
      */
     void send_dshot_frame(bool debug = false);
 
-    // --- Repeating timer setup
+    // --- Repeating timer setup for dshot frame
 
     // Keep track of repeating timer status
     extern bool _dma_alarm_rt_state;
@@ -47,11 +53,28 @@ namespace shoot
     extern struct repeating_timer send_frame_rt;
 
     // Routine to setup repeating timer to send dshot frame
-    void rt_setup();
+    void dshot_rt_setup();
 
-    // ISR to send DShot frame over DMA
+    // rt callback to send DShot frame over DMA
     bool repeating_send_dshot_frame(struct repeating_timer *rt);
+
+    // --- Uart Telem setup
+
+    /*! \brief setup single wire telemetry uart
+     */
+    void uart_telemetry_setup();
+    extern uint _telem_baudrate;
+    extern bool _uart_telem_rt_state;
+    // Repeating timer configuration for Uart telemetry request
+    extern struct repeating_timer uart_telem_req_rt;
+
+    /// TODO: uart telem receieve interrupt handler
+    void uart_telem_irq(void);
+
+    // rt callback for uart telemetry request
+    bool repeating_uart_telem_req(struct repeating_timer *rt);
 
     // Debugging
     void print_shoot_setup();
+    void print_uart_telem_setup();
 }

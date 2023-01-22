@@ -56,8 +56,16 @@ The telemetry data consists of 10 bytes at 115200 baud.
 
 // Timing of UART
 One *packet* of telemetry takes more time to send than a DShot frame:
-// Calculate time to send a UART packet
-// Calculate time(s) to send a DShot frame / or quote values and past calcs above
+
+// Time taken to receive telem packet over uart:
+80 bits / 115200 baudrate = 695 us
+
+Note that this doesn't take in to accounte the time taken to send a dshot frame with the telem bit set!
+
+// Calculate time(s) to send a DShot frame / or quote values and past calcs above (note we use 20 bits for the frame instead of 16 bits for the command)
+20 bits / 150 kHz = 133 us
+
+20 bits / 1200 kHz = 17 us
 
 Note that the ESC will respond to every UART request.
 This means that one must time the telem bit on the DShot command such that we don't overload it. 
