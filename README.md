@@ -30,19 +30,58 @@ NOTE: need a good source for this.
 1 - 47: reserved for special use
 48 - 2047: Throttle (2000 steps of precision)
 
-### Telemetry
-UART port
-Returns 10 8-bit bytes sent with 115200 baud and 3.6V.
-Byte 0: Temperature 
-Byte 1: Voltage high byte
-Byte 2: Voltage low byte
-Byte 3: Current high byte
-Byte 4: Current low byte
-Byte 5: Consumption high byte
-Byte 6: Consumption low byte
-Byte 7: Rpm high byte
-Byte 8: Rpm low byte
-Byte 9: 8-bit CRC
+---
+### UART Telemetry
+
+This section is about acquiring Telemetry using the UART TX wire on the ESC.
+Note that you may need to solder a wire on the ESC TX pad and hook it up to a GPIO UART RX pin on the pico. 
+
+When sending a DShot frame, a *telemetry* bit can be set. 
+Doing so will tell the ESC to send telemetry on the UART wire. 
+The telemetry data consists of 10 bytes at 115200 baud. 
+(I believe the nominal voltage is 3.6 V, but it might be a range from 2.5 V to 5.5 V depending on what the pull-up resistor is connected to on the microncontroller.) The bytes returned are as follows:
+
+| Byte | Description           | Unit |
+| ---- | --------------------- | ---- |
+| 0    | Temperature           | 
+| 1    | Voltage high byte     |
+| 2    | Voltage low byte      |
+| 3    | Current high byte     |
+| 4    | Current low byte      |
+| 5    | Consumption high byte |
+| 6    | Consumption low byte  |
+| 7    | Rpm high byte         |
+| 8    | Rpm low byte          |
+| 9    | 8-bit CRC             |
+
+// Timing of UART
+One *packet* of telemetry takes more time to send than a DShot frame:
+// Calculate time to send a UART packet
+// Calculate time(s) to send a DShot frame / or quote values and past calcs above
+
+Note that the ESC will respond to every UART request.
+This means that one must time the telem bit on the DShot command such that we don't overload it. 
+
+Apparently the telemetry bit ~~accuracy~~ increases by using a pull-up resistor. I am still getting pretty bad bit rate (seems like CRC is only ever 50% right). 
+
+Implementation ideas:
+
+1. Use a repeating timer to set the telem flag. The dshot repeating timer will send the frame and then reset the telem flag to 0 (on every dshot callback)
+   1. This adds extra instructions to the dshot callback
+   2. Note: there could be interrupt race conditions considering the scenario below, if the priority of Telem rt is higher. However, [this post](https://forums.raspberrypi.com/viewtopic.php?t=328648) says that setting up the rt on the same alarm pool gives them ewual priority (i.e. callback isn't interrupted!)
+      1. Dshot rt function sends frame
+      2. Telem rt interrupts and sets telem flag; then returns
+      3. Dshot frame func resumts, and resets telem flag...
+      4. hence this telem flag is missed!
+
+2. Use a repeating timer to set the telem flag, immediately send a dshot frame and then reset the telem flag 
+   1. This can potentially impact the timing of dshot frames sent
+   2. Note that the send dshot frame functions checks if the previous frame has been sent yet, so the above will not impinge on this 
+
+3. Set the telem frequency, and calculate a "counter compare". Each time a dshot frame is sent, a counter will increment and compare against the telem counter compare; if it is the same, then we set the telem flag, otherwise reset the telem flag.
+   1. This is essentially implementing a timer! But it doesn't interrupt the flow so much. 
+
+4. 
 
 ---
 ## Scheme
@@ -88,7 +127,7 @@ NOTE: 32 bit time is used
 - [ ] Setup a UART port
 - [ ] use a simple dshot cmd with telemetry to see if uart outputs
 
-- [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be).
+- [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be). Otherwise, it may be better for uart interrupt to have a higher priority(!)
 
 - :tick: Transfer PWM setup to `tts/`
 - [ ] Transfer DMA setup to `tts/`
