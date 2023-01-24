@@ -78,13 +78,16 @@ bool shoot::repeating_send_dshot_frame(struct repeating_timer *rt)
 
 uint shoot::_telem_baudrate;
 
-void uart_telem_irq(void)
+void shoot::uart_telem_irq(void)
 {
-    // Clear uart irq?
+    /// NOTE: uart irq is cleared automatically in hw?
 
     // Read uart
-
-    // 
+    while(uart_is_readable(UART_MOTOR_TELEMETRY))
+    {
+        Serial.print("UART: ");
+        Serial.println(uart_getc(UART_MOTOR_TELEMETRY), HEX);
+    }
 }
 
 bool shoot::repeating_uart_telem_req(struct repeating_timer *rt)
@@ -104,21 +107,25 @@ void shoot::uart_telemetry_setup()
     // Set GPIO pin mux for RX
     gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
     
-    // Set pull up
+    /// MAYBE: Set pull up
     // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+
+    // Turn off flow control
+    uart_set_hw_flow(UART_MOTOR_TELEMETRY, false, false);
+
+    /// MAYBE: Set data format
+    // uart_set_format(UART_MOTOR_TELEMETRY, 8, 1, UART_PARITY_NONE);
 
     // Setup repeating timer for uart telem request
     shoot::_uart_telem_rt_state = alarm_pool_add_repeating_timer_us(tts::pico_alarm_pool, UART_TELEMETRY_PERIOD, shoot::repeating_uart_telem_req, NULL, &shoot::uart_telem_req_rt);
-
-    /// -- TODO:
-    /// MAYBES:
-    // check if it has a shared handler
-    // check it's priority
-
-    // Add exclusive interrupt handler to uart0 (UART_MOTOR_TELEMETRY), UART0_IRQ
-
-    // Enable uart interrupt (uart_set_irq_enables)
     
+    // Add exclusive interrupt handler
+    irq_set_exclusive_handler(UART_MOTOR_IRQ, shoot::uart_telem_irq);
+
+    irq_set_enabled(UART_MOTOR_IRQ, true);
+
+    // Enable uart interrupt on rx
+    uart_set_irq_enables(UART_MOTOR_TELEMETRY, true, false);    
 }
 
 void shoot::print_shoot_setup()
@@ -155,4 +162,14 @@ void shoot::print_uart_telem_setup()
 
     Serial.print("\tDown: ");
     Serial.print(gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
+
+    // Check uart rx interrupt
+
+    // check if it has a shared handler
+    // check it's priority
+
+    // Could be useful to check if uart is enabled?
+    // This should be executed in the debugging function
+    Serial.print("UART Enabled: ");
+    Serial.println(irq_is_enabled(UART_MOTOR_IRQ));
 }
