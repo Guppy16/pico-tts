@@ -93,19 +93,12 @@ int main() {
     hx711_power_up(&hx, hx711_gain_128);
     hx711_wait_settle(hx711_rate_10);
 
-    sleep_ms(1500);
-
-    printf("Setting up load cell\n");
-    hx711_t hx;
-    hx711_init(&hx, CLKPIN, DATPIN, pio0, &hx711_noblock_program,
-               &hx711_noblock_program_init);
-    hx711_power_up(&hx, hx711_gain_128);
-    hx711_wait_settle(hx711_rate_10);
-
     printf("Setting up dshot\n");
     tts::pwm_setup();
     tts::dma_setup();
     shoot::rt_setup();
+
+    sleep_ms(1500);
 
     // tts::print_gpio_setup();
     // tts::print_dshot_setup();
