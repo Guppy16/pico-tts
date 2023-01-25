@@ -1,0 +1,3 @@
+[submodule "lib/extern/hx711-pico-c"]
+	path = lib/extern/hx711-pico-c
+	url = https://github.com/endail/hx711-pico-c

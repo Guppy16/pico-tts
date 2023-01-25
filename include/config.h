@@ -2,7 +2,6 @@
  * File to store main constants
  */
 #pragma once
-#include "inttypes.h"
 
 // NOTE: The equivalent DSHOT speed is 8 Hz in DEBUG mode
 // This could be set here directly instead of changing:
@@ -19,6 +18,12 @@
 #else
 #define MOTOR_GPIO 14
 #endif
+
+// Pin configurations
+constexpr uint LED_BUILTIN = 25;
+
+constexpr uint CLKPIN = 17;
+constexpr uint DATPIN = 16;
 
 // --- DMA Variables
 // Note that these should be cast uint32_t when sent to the slice
@@ -73,5 +78,5 @@ constexpr uint32_t DMA_ALARM_PERIOD = DEBUG ? 3000000 : 1000 / 7;
 constexpr uint16_t ZERO_THROTTLE = 48;   // 0 Throttle code
 constexpr uint16_t MAX_THROTTLE = 2047;  // 2^12 - 1
 constexpr uint16_t ARM_THROTTLE = 300;   // < 50% MAX_THROTTLE
+constexpr uint8_t THROTTLE_INCREMENT = 50;
 
-constexpr uint LED_BUILTIN = 25;

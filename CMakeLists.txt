@@ -25,12 +25,14 @@ SET(DSHOT_FILES
 add_executable(${PROJECT_NAME}
     src/main.cpp
     ${DSHOT_FILES}
+    ./lib/extern/hx711-pico-c/src/hx711.c
 )
 
 include_directories(./lib/shoot)
 include_directories(./lib/tts)
 include_directories(./lib/utils)
 include_directories(./lib/dshot)
+include_directories(./lib/extern/hx711-pico-c/include)
 include_directories(./include)
 
 target_link_libraries(${PROJECT_NAME} pico_stdlib hardware_pwm hardware_dma hardware_pio hardware_exception pico_multicore)
