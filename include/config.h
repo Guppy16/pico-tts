@@ -3,6 +3,11 @@
  */
 #pragma once
 
+#include "pico/stdlib.h"
+#include "hardware/uart.h"
+#include "hardware/irq.h"
+
+
 // NOTE: The equivalent DSHOT speed is 8 Hz in DEBUG mode
 // This could be set here directly instead of changing:
 // DSHOT_PWM_WRAP, DSHOT_PWM_DIV, (DMA_ALARM_PERIOD)?

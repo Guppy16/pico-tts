@@ -27,8 +27,7 @@ void update_signal(int &key_input) {
             if (shoot::throttle_code == MAX_THROTTLE) {
                 printf("Max Throttle reached\n");
             } else {
-                shoot::throttle_code = MIN(
-                    shoot::throttle_code + THROTTLE_INCREMENT, MAX_THROTTLE);
+                shoot::throttle_code += 50;
                 if (shoot::throttle_code > MAX_THROTTLE)
                     shoot::throttle_code = MAX_THROTTLE;
                 printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
@@ -45,8 +44,7 @@ void update_signal(int &key_input) {
             if (shoot::throttle_code == ZERO_THROTTLE) {
                 printf("Throttle is zero\n");
             } else {
-                shoot::throttle_code = MIN(
-                    shoot::throttle_code - THROTTLE_INCREMENT, ZERO_THROTTLE);
+                shoot::throttle_code -= 50;
                 printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
             }
         } else {
@@ -54,7 +52,9 @@ void update_signal(int &key_input) {
         }
     }
 
-    // q - send zero throttle
+    // q - disarm
+    // Not sure how to disarm yet. Maybe set throttle to 0 and don't send a
+    // cmd for some secs?
     if (key_input == 32) {
         shoot::throttle_code = ZERO_THROTTLE;
         shoot::telemetry = 0;
@@ -76,10 +76,22 @@ int main() {
     gpio_init(LED_BUILTIN);
     gpio_set_dir(LED_BUILTIN, GPIO_OUT);
 
-    // Flash LED on and off 3 times
     for (int i = 0; i < 3; i++) {
-        utils::flash_led(LED_BUILTIN);
+        gpio_put(LED_BUILTIN, 1);  // Set pin 25 to high
+        printf("LED ON!\n");
+        sleep_ms(1000);  // 0.5s delay
+
+        gpio_put(LED_BUILTIN, 0);  // Set pin 25 to low
+        printf("LED OFF!\n");
+        sleep_ms(1000);  // 0.5s delay
     }
+
+    printf("Setting up load cell\n");
+    hx711_t hx;
+    hx711_init(&hx, CLKPIN, DATPIN, pio0, &hx711_noblock_program,
+               &hx711_noblock_program_init);
+    hx711_power_up(&hx, hx711_gain_128);
+    hx711_wait_settle(hx711_rate_10);
 
     sleep_ms(1500);
 
