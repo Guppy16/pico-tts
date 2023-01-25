@@ -16,43 +16,11 @@ void loop() {
         utils::flash_led(LED_BUILTIN);
     }
 
-    // a (arm)
-    // if (strcmp(key_input, ) == 97)
-    // {
-    //     // Disable timer
-    //     cancel_repeating_timer(&send_frame_rt);
-    //     // Arm motor
-    //     arm_motor();
-    //     // Re-enable timer
-    //     dma_alarm_rt_state =
-    //     alarm_pool_add_repeating_timer_us(pico_alarm_pool,
-    //     DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL,
-    //     &send_frame_rt); printf("Re-enabled repeating DMA alarm:
-    //     "); printfln(dma_alarm_rt_state);
-
-    //     return;
-    // }
-
     // b - beep
     if (strcmp(key_input, "b") == 0) {
         shoot::throttle_code = 1;
         shoot::telemetry = 1;
     }
-
-    // s - spin
-    // if (strcmp(key_input, ) == 115)
-    // {
-    //     // Disable timer
-    //     cancel_repeating_timer(&send_frame_rt);
-    //     // Ramp up to speed ARM_THROTTLE + 100
-    //     ramp_motor();
-    //     // Re-enable timer
-    //     dma_alarm_rt_state =
-    //     alarm_pool_add_repeating_timer_us(pico_alarm_pool,
-    //     DMA_ALARM_PERIOD, repeating_send_dshot_frame, NULL,
-    //     &send_frame_rt); printf("Re-enabled repeating DMA alarm:
-    //     "); printfln(dma_alarm_rt_state);
-    // }
 
     // r - rise
     if (strcmp(key_input, "r") == 0) {
