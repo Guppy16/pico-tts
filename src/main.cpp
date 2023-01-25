@@ -1,29 +1,26 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "hx711.h"
+#include "hx711_noblock.pio.h"
 #include "pico/stdlib.h"
 #include "shoot.h"
 #include "utils.h"
 
-void loop() {
-    char key_input[1024];
-
-    scanf("%1024s", key_input);
-    printf("Byte: %1024s", key_input);
-
+void update_signal(int &key_input) {
     // l (led)
-    if (strcmp(key_input, "l") == 0) {
+    if (key_input == 108) {
         utils::flash_led(LED_BUILTIN);
     }
 
     // b - beep
-    if (strcmp(key_input, "b") == 0) {
+    if (key_input == 98) {
         shoot::throttle_code = 1;
         shoot::telemetry = 1;
     }
 
     // r - rise
-    if (strcmp(key_input, "r") == 0) {
+    if (key_input == 114) {
         if (shoot::throttle_code >= ZERO_THROTTLE and
             shoot::throttle_code <= MAX_THROTTLE) {
             // Check for max throttle
@@ -41,7 +38,7 @@ void loop() {
     }
 
     // f - fall
-    if (strcmp(key_input, "f") == 0) {
+    if (key_input == 102) {
         if (shoot::throttle_code <= MAX_THROTTLE &&
             shoot::throttle_code >= ZERO_THROTTLE) {
             if (shoot::throttle_code == ZERO_THROTTLE) {
@@ -64,10 +61,6 @@ void loop() {
         printf("Throttle: %i\n", 0);
     }
 
-    // NOTE: In DEBUG mode, sending a DSHOT Frame takes a lot of time!
-    // So it may seem as if the PICO is unable to detect key presses
-    // while sending commands!
-    // But is this even needed?
     shoot::send_dshot_frame();
     printf("Finished processing byte.\n");
 }
@@ -80,7 +73,6 @@ int main() {
     int32_t zero_val = 150622;
 
     stdio_init_all();
-
     gpio_init(LED_BUILTIN);
     gpio_set_dir(LED_BUILTIN, GPIO_OUT);
 
@@ -101,27 +93,19 @@ int main() {
     hx711_power_up(&hx, hx711_gain_128);
     hx711_wait_settle(hx711_rate_10);
 
-    // pwm config
-    // Note that PWM needs to be setup first,
-    // because the dma dreq requires tts::pwm_slice_num
+    printf("Setting up dshot\n");
     tts::pwm_setup();
-
-    // dma config
     tts::dma_setup();
-
-    // Set repeating timer
-    // NOTE: this can be put in main loop to start
-    // repeating timer on key press (e.g. a for arm)
     shoot::rt_setup();
 
     sleep_ms(1500);
 
-    tts::print_gpio_setup();
-    tts::print_dshot_setup();
-    tts::print_dma_setup();
+    // tts::print_gpio_setup();
+    // tts::print_dshot_setup();
+    // tts::print_dma_setup();
 
-    printf("Initial throttle: %i", shoot::throttle_code);
-    printf("\tInitial telemetry: %i", shoot::telemetry);
+    printf("Initial throttle:\n %i\n", shoot::throttle_code);
+    printf("Initial telemetry:\n %i\n", shoot::telemetry);
 
     while (1) {
         key_input = getchar_timeout_us(0);

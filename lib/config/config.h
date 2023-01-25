@@ -85,4 +85,8 @@ constexpr uint16_t ZERO_THROTTLE = 48;   // 0 Throttle code
 constexpr uint16_t MAX_THROTTLE = 2047;  // 2^12 - 1
 constexpr uint16_t ARM_THROTTLE = 300;   // < 50% MAX_THROTTLE
 
+// Pin configurations
 constexpr uint LED_BUILTIN = 25;
+
+constexpr uint CLKPIN = 32;
+constexpr uint DATPIN = 31;
