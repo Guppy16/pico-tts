@@ -134,6 +134,7 @@ NOTE: 32 bit time is used
 ## To Do
 - [ ] Setup a UART port
 - [ ] use a simple dshot cmd with telemetry to see if uart outputs
+- [ ] Add unit tests for converting functions that interpret uart telem data (e.g. crc, unit conversions)
 
 - [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be). Otherwise, it may be better for uart interrupt to have a higher priority(!)
 
@@ -193,6 +194,15 @@ LLLL LLLL LLHH LLHH
 - [This post](https://blck.mn/2016/11/dshot-the-new-kid-on-the-block/) has a simple explanation of dshot with a few examples
 - [DShot - the missing handbook](https://brushlesswhoop.com/dshot-and-bidirectional-dshot/) has supported hw, dshot frame example, arming, telemetry, bi-directional dshot
 
+### Telemetry using UART
+
+- [Kiss ESC Telemetry Datasheet](http://www.rcgroups.com/forums/showatt.php?attachmentid=8524039&d=1450424877)
+- [Pico Advanced UART example with RX interrupt](https://github.com/raspberrypi/pico-examples/blob/master/uart/uart_advanced/uart_advanced.c)
+- [Betaflight's implementation](https://github.com/betaflight/betaflight/blob/master/src/main/sensors/esc_sensor.c)
+- [This post on BLHeli bitdump](https://github.com/bitdump/BLHeli/issues/431) mentions to use a 1k pull-up resistor to VCC to decrease error rate
+- 
+
+
 ### Other
 
 - [Wiz IO Pico](https://github.com/Wiz-IO/wizio-pico): seems like an alternative to the Arduino framework used in PlatformIO? More details can be found on their [Baremetal wiki](https://github.com/Wiz-IO/wizio-pico/wiki/BAREMETAL)
@@ -202,3 +212,7 @@ LLLL LLLL LLHH LLHH
 
 - [Upload port required issue](https://github.com/platformio/platform-raspberrypi/issues/2). I don't think this issue will be faced if using Zadig
 
+- [Saleae logic analyzer](https://www.az-delivery.uk/en/products/saleae-logic-analyzer). [SW Download](https://support.saleae.com/logic-software/sw-download)
+
+- [Android App for BLHeli 32](https://www.rcgroups.com/forums/showthread.php?3143134-Android-APP-for-BLHeli_32)
+- [Betaflight wiki](https://github.com/betaflight/betaflight/wiki)
