@@ -60,6 +60,9 @@ Dependency Graph:
 - [ ] Do we need to use the Arduino framework? Or can we just use the Pico SDK and import libraries 3rd party libs if necessary? If the latter, we could either consider [Wiz IO](https://github.com/Wiz-IO/wizio-pico) or check out [this post](https://community.platformio.org/t/include-pico-stdlib-h-causes-errors/22997). 
 - [ ] Transfer `print_*_setup` functions to logging / utils? Maybe check `refactor` branch. Maybe include the serial printf lib. There is an interesting post on [printable classes](https://forum.arduino.cc/t/printable-classes/438816)
 - [ ] Scheme to represent DShot codes. enum is possible for special codes, but shouldn't be used for throttle values?
+- [ ] Explore the idea of using / generating a look up table to convert dshot to pwm counter values (and vice versa for bidir dshot). 
+Can this be hooked up with Programmable IO?
+Memory usage: 2^16 command x 32 bit word = 32k x 64 bit word (that might be too much). 
 
 ---
 ## DShot Protocol
