@@ -2,10 +2,6 @@
  * File to store main constants
  */
 #pragma once
-#include "hardware/irq.h"
-#include "hardware/uart.h"
-#include "inttypes.h"
-#include "pico/stdlib.h"
 
 // NOTE: The equivalent DSHOT speed is 8 Hz in DEBUG mode
 // This could be set here directly instead of changing:
