@@ -27,7 +27,8 @@ void update_signal(int &key_input) {
             if (shoot::throttle_code == MAX_THROTTLE) {
                 printf("Max Throttle reached\n");
             } else {
-                shoot::throttle_code += 50;
+                shoot::throttle_code = MIN(
+                    shoot::throttle_code + THROTTLE_INCREMENT, MAX_THROTTLE);
                 if (shoot::throttle_code > MAX_THROTTLE)
                     shoot::throttle_code = MAX_THROTTLE;
                 printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
@@ -44,7 +45,8 @@ void update_signal(int &key_input) {
             if (shoot::throttle_code == ZERO_THROTTLE) {
                 printf("Throttle is zero\n");
             } else {
-                shoot::throttle_code -= 50;
+                shoot::throttle_code = MIN(
+                    shoot::throttle_code - THROTTLE_INCREMENT, ZERO_THROTTLE);
                 printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
             }
         } else {
@@ -52,9 +54,7 @@ void update_signal(int &key_input) {
         }
     }
 
-    // q - disarm
-    // Not sure how to disarm yet. Maybe set throttle to 0 and don't send a
-    // cmd for some secs?
+    // q - send zero throttle
     if (key_input == 32) {
         shoot::throttle_code = ZERO_THROTTLE;
         shoot::telemetry = 0;
@@ -76,15 +76,12 @@ int main() {
     gpio_init(LED_BUILTIN);
     gpio_set_dir(LED_BUILTIN, GPIO_OUT);
 
+    // Flash LED on and off 3 times
     for (int i = 0; i < 3; i++) {
-        gpio_put(LED_BUILTIN, 1);  // Set pin 25 to high
-        printf("LED ON!\n");
-        sleep_ms(1000);  // 0.5s delay
-
-        gpio_put(LED_BUILTIN, 0);  // Set pin 25 to low
-        printf("LED OFF!\n");
-        sleep_ms(1000);  // 0.5s delay
+        utils::flash_led(LED_BUILTIN);
     }
+
+    sleep_ms(1500);
 
     printf("Setting up load cell\n");
     hx711_t hx;
@@ -97,8 +94,6 @@ int main() {
     tts::pwm_setup();
     tts::dma_setup();
     shoot::rt_setup();
-
-    sleep_ms(1500);
 
     // tts::print_gpio_setup();
     // tts::print_dshot_setup();
