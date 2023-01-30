@@ -3,6 +3,7 @@
 
 #include "hx711.h"
 #include "hx711_noblock.pio.h"
+#include "pico/platform.h"
 #include "pico/stdlib.h"
 #include "shoot.h"
 #include "utils.h"
@@ -45,7 +46,7 @@ void update_signal(int &key_input) {
             if (shoot::throttle_code == ZERO_THROTTLE) {
                 printf("Throttle is zero\n");
             } else {
-                shoot::throttle_code = MIN(
+                shoot::throttle_code = MAX(
                     shoot::throttle_code - THROTTLE_INCREMENT, ZERO_THROTTLE);
                 printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
             }
