@@ -3,6 +3,7 @@
 
 #include "hx711.h"
 #include "hx711_noblock.pio.h"
+#include "pico/platform.h"
 #include "pico/stdlib.h"
 #include "shoot.h"
 #include "utils.h"
