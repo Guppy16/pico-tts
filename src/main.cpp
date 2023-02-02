@@ -3,6 +3,7 @@
 
 #include "hx711.h"
 #include "hx711_noblock.pio.h"
+#include "pico/platform.h"
 #include "pico/stdlib.h"
 #include "shoot.h"
 #include "utils.h"
@@ -26,12 +27,10 @@ void update_signal(int &key_input) {
 
       shoot::throttle_code =
           MIN(shoot::throttle_code + THROTTLE_INCREMENT, MAX_THROTTLE);
-      // Check for max throttle
-      if (shoot::throttle_code == MAX_THROTTLE) {
-        printf("Max Throttle reached\n");
-      } else {
-        printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
-      }
+
+      printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
+      shoot::throttle_code == MAX_THROTTLE &&printf("Max Throttle reached\n");
+
     } else {
       printf("Motor is not in throttle mode\n");
     }
@@ -44,12 +43,10 @@ void update_signal(int &key_input) {
 
       shoot::throttle_code =
           MAX(shoot::throttle_code - THROTTLE_INCREMENT, ZERO_THROTTLE);
-			// Check if min throttle reached
-      if (shoot::throttle_code == ZERO_THROTTLE) {
-        printf("Throttle is zero\n");
-      } else {
-        printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
-      }
+
+      printf("Throttle: %i\n", shoot::throttle_code - ZERO_THROTTLE);
+      shoot::throttle_code == ZERO_THROTTLE &&printf("Throttle is zero\n");
+
     } else {
       printf("Motor is not in throttle mode\n");
     }
@@ -86,7 +83,7 @@ int main() {
 
   printf("Setting up load cell\n");
   hx711_t hx;
-  hx711_init(&hx, CLKPIN, DATPIN, pio0, &hx711_noblock_program,
+  hx711_init(&hx, HX711_CLKPIN, HX711_DATPIN, pio0, &hx711_noblock_program,
              &hx711_noblock_program_init);
   hx711_power_up(&hx, hx711_gain_128);
   hx711_wait_settle(hx711_rate_10);
