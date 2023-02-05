@@ -1,14 +1,22 @@
 # Pico DShot
 
-## Notes on setting up the repo
+## Setting up the repo
 
 - git clone repo
 - git submodule init
 - git submodule update
 - `cd lib/extern/pico-sdk; git submodule update --init` <-- This was required for `TinyUSB`
 
-This repo is being developed to use a RPi Pico to send dshot commands to ESCs.
-This is a work in progress.
+## Running the Unit Tests
+
+Assuming all the submodules have been setup
+
+```terminal
+mkdir test/build && cd $_
+cmake ..
+cmake --build .
+ctest --verbose
+```
 
 ---
 ## Code Overview
@@ -34,7 +42,7 @@ This is a work in progress.
     - `utils/` just an led flashing for debugging
 
 - `src/` contains `main.cpp` which uses serial input to send dshot commands
-- `test/` contains a unit test file `test_dshot.cpp`
+- `test/` contains a unit test for `dshot/` as well as a cmake config file
 
 Dependency Graph:
 
