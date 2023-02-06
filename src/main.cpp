@@ -63,39 +63,48 @@ void update_signal(int &key_input) {
   printf("Finished processing byte.\n");
 }
 
+void print_load_cell_setup() {
+  printf("\nHX711 Load Cell Setup");
+  printf("Pins: CLK %i DAT %i", HX711_CLKPIN, HX711_DATPIN);
+}
+
 int main() {
+
+  // Set MCU clock frequency. Should we assert this?
+  set_sys_clock_khz(MCU_FREQ * 1e3, false);
+
   int32_t thrust;
   int key_input;
-
-  // Load cell calibration
-  int32_t zero_val = 150622;
 
   stdio_init_all();
   gpio_init(LED_BUILTIN);
   gpio_set_dir(LED_BUILTIN, GPIO_OUT);
 
   // Flash LED on and off 3 times
-  for (int i = 0; i < 3; i++) {
-    utils::flash_led(LED_BUILTIN);
-  }
+  utils::flash_led(LED_BUILTIN, 3);
 
-  sleep_ms(1500);
-
-  printf("Setting up load cell\n");
+  // Setup Load cell
+  int32_t zero_val = 150622; // Load cell calibration
   hx711_t hx;
   hx711_init(&hx, HX711_CLKPIN, HX711_DATPIN, pio0, &hx711_noblock_program,
              &hx711_noblock_program_init);
   hx711_power_up(&hx, hx711_gain_128);
   hx711_wait_settle(hx711_rate_10);
 
-  printf("Setting up dshot\n");
+  // Setup DShot
   tts::pwm_setup();
   tts::dma_setup();
   shoot::rt_setup();
 
-  // tts::print_gpio_setup();
-  // tts::print_dshot_setup();
-  // tts::print_dma_setup();
+  sleep_ms(1500);
+
+  printf("MCU Freq (kHz): Expected %d Actual %d", MCU_FREQ * 1000,
+         frequency_count_khz(CLOCKS_FC0_SRC_VALUE_CLK_SYS));
+
+  tts::print_gpio_setup();
+  tts::print_dshot_setup();
+  tts::print_dma_setup();
+  print_load_cell_setup();
 
   printf("Initial throttle:\n %i\n", shoot::throttle_code);
   printf("Initial telemetry:\n %i\n", shoot::telemetry);
