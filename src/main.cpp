@@ -8,7 +8,7 @@
 #include "shoot.h"
 #include "utils.h"
 
-void update_signal(int &key_input) {
+void update_signal(const int &key_input) {
   // l (led)
   if (key_input == 108) {
     utils::flash_led(LED_BUILTIN);
@@ -56,7 +56,7 @@ void update_signal(int &key_input) {
     }
   }
 
-  // q - send zero throttle
+  // spacebar - send zero throttle
   if (key_input == 32) {
     shoot::throttle_code = ZERO_THROTTLE;
     shoot::telemetry = 0;
@@ -64,12 +64,12 @@ void update_signal(int &key_input) {
   }
 
   shoot::send_dshot_frame();
-  printf("Finished processing byte.\n");
+  printf("Finished processing key input %i\n", key_input);
 }
 
 void print_load_cell_setup() {
-  printf("\nHX711 Load Cell Setup");
-  printf("Pins: CLK %i DAT %i", HX711_CLKPIN, HX711_DATPIN);
+  printf("\nHX711 Load Cell Setup\n");
+  printf("Pins: CLK %i DAT %i\n", HX711_CLKPIN, HX711_DATPIN);
 }
 
 int main() {
@@ -102,23 +102,26 @@ int main() {
 
   sleep_ms(1500);
 
-  printf("MCU Freq (kHz): Expected %d Actual %d", MCU_FREQ * 1000,
+  printf("MCU Freq (kHz): Expected %d Actual %d\n", MCU_FREQ * 1000,
          frequency_count_khz(CLOCKS_FC0_SRC_VALUE_CLK_SYS));
 
   tts::print_gpio_setup();
   tts::print_dshot_setup();
   tts::print_dma_setup();
+  shoot::print_rt_setup();
   print_load_cell_setup();
 
-  printf("Initial throttle:\n %i\n", shoot::throttle_code);
-  printf("Initial telemetry:\n %i\n", shoot::telemetry);
+  printf("Initial throttle: %i\n", shoot::throttle_code);
+  printf("Initial telemetry: %i\n", shoot::telemetry);
 
   while (1) {
     key_input = getchar_timeout_us(0);
-    update_signal(key_input);
+    if (key_input != PICO_ERROR_TIMEOUT) {
+      update_signal(key_input);
+    }
     sleep_ms(100);
-    if (hx711_get_value_noblock(&hx, &thrust)) {
-      printf("%li\n", thrust - zero_val);
+    if (hx711_get_value_noblock(&hx, &thrust) && thrust) {
+      printf("hx711: %li\n", thrust - zero_val);
     }
   }
 }
