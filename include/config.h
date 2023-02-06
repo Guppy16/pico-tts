@@ -21,10 +21,10 @@
 #endif
 
 // Pin configurations
-constexpr uint LED_BUILTIN = 25;
+constexpr uint8_t LED_BUILTIN = 25;
 
-constexpr uint CLKPIN = 17;
-constexpr uint DATPIN = 16;
+constexpr uint8_t HX711_CLKPIN = 17;
+constexpr uint8_t HX711_DATPIN = 16;
 
 // --- DMA Variables
 // Note that these should be cast uint32_t when sent to the slice
