@@ -24,7 +24,6 @@ void update_signal(const int &key_input) {
   if (key_input == 114) {
     if (shoot::throttle_code >= ZERO_THROTTLE and
         shoot::throttle_code <= MAX_THROTTLE) {
-
       shoot::throttle_code =
           MIN(shoot::throttle_code + THROTTLE_INCREMENT, MAX_THROTTLE);
 
@@ -40,7 +39,6 @@ void update_signal(const int &key_input) {
   if (key_input == 102) {
     if (shoot::throttle_code <= MAX_THROTTLE &&
         shoot::throttle_code >= ZERO_THROTTLE) {
-
       shoot::throttle_code =
           MAX(shoot::throttle_code - THROTTLE_INCREMENT, ZERO_THROTTLE);
 
@@ -69,7 +67,6 @@ void print_load_cell_setup() {
 }
 
 int main() {
-
   // Set MCU clock frequency. Should we assert this?
   set_sys_clock_khz(MCU_FREQ * 1e3, false);
 

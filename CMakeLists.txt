@@ -22,8 +22,11 @@ pico_sdk_init()
 set(DSHOT_FILES ./lib/shoot/shoot.cpp ./lib/tts/tts.cpp ./lib/utils/utils.cpp
                 ./lib/dshot/dshot.cpp)
 
-add_executable(${PROJECT_NAME} src/main.cpp ${DSHOT_FILES}
-                               ./lib/extern/hx711-pico-c/src/hx711.c)
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    ${DSHOT_FILES}
+    ./lib/extern/hx711-pico-c/src/hx711.c
+)
 
 include_directories(./lib/shoot)
 include_directories(./lib/tts)
