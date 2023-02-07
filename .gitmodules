@@ -1,0 +1,9 @@
+[submodule "lib/extern/hx711-pico-c"]
+	path = lib/extern/hx711-pico-c
+	url = https://github.com/endail/hx711-pico-c
+[submodule "lib/extern/pico-sdk"]
+	path = lib/extern/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "lib/extern/Unity"]
+	path = lib/extern/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git
