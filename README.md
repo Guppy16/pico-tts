@@ -178,13 +178,13 @@ LLLL LLLL LLHH LLHH
 ---
 ## Sources
 
-### USB Driver
-- Use [Zadig](https://zadig.akeo.ie/) to install drivers for the RPi boot interface. This makes the flashing experience a LOT better! A thread on the [platform io forum](https://community.platformio.org/t/official-platformio-arduino-ide-support-for-the-raspberry-pi-pico-is-now-available/20792/9) goes in to more detail. [This thread[(https://community.platformio.org/t/raspberry-pi-pico-upload-problem/22809/7) also linked to this [github comment](https://github.com/platformio/platform-raspberrypi/issues/2#issuecomment-828586398) mentions to use Zadig. 
+### USB Driver issues with Windows
+- Use [Zadig](https://zadig.akeo.ie/) to install drivers for the RPi boot interface. This makes the flashing experience a LOT better! A thread on the [platform io forum](https://community.platformio.org/t/official-platformio-arduino-ide-support-for-the-raspberry-pi-pico-is-now-available/20792/9) goes in to more detail. [This thread](https://community.platformio.org/t/raspberry-pi-pico-upload-problem/22809/7) also linked to this [github comment](https://github.com/platformio/platform-raspberrypi/issues/2#issuecomment-828586398) mentions to use Zadig. [This thread](https://github.com/raspberrypi/picotool/issues/20) also mentions an issue related to Windows not connectingto the Pico.
 
 ### Docs and Sample Implementation
 - [Pico SDK API Docs](https://raspberrypi.github.io/pico-sdk-doxygen/modules.html). Some quick links: [dma](https://raspberrypi.github.io/pico-sdk-doxygen/group__hardware__dma)
 - [Documentation on the Pico](https://www.raspberrypi.com/documentation/microcontrollers/?version=E0C9125B0D9B) incl spec, datasheets, [pinout](https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf), etc.
-- [Pico examples](https://github.com/raspberrypi/pico-examples) from the rpi github incl `dma/`. There's an interesting example on pairing an adc with dma [here](https://github.com/raspberrypi/pico-examples/blob/master/adc/dma_capture/dma_capture.c). Note that when viewing pico examples, they use `#include "pico/stdlib.h"`. This is *not* to be used in the *Arduino* framework! as explained in [this post](https://community.platformio.org/t/include-pico-stdlib-h-causes-errors/22997). 
+- [Pico examples](https://github.com/raspberrypi/pico-examples) from the rpi github incl `dma/`. [pwm led fade](https://github.com/raspberrypi/pico-examples/blob/master/pwm/led_fade/pwm_led_fade.c) motivated this repo's implementation. There's an interesting example on pairing an adc with dma [here](https://github.com/raspberrypi/pico-examples/blob/master/adc/dma_capture/dma_capture.c). Note that when viewing pico examples, they use `#include "pico/stdlib.h"`. This is *not* to be used in the *Arduino* framework! as explained in [this post](https://community.platformio.org/t/include-pico-stdlib-h-causes-errors/22997). 
 
 - [PlatformIO Documentation on Pico](https://docs.platformio.org/en/stable/boards/raspberrypi/pico.html#board-raspberrypi-pico). It only mentions the Arduino framework, but more seem to be avaialable (see other links here). 
 
@@ -193,6 +193,7 @@ LLLL LLLL LLHH LLHH
 - [Spencer's HW Blog](https://www.swallenhardware.io/battlebots/2019/4/20/a-developers-guide-to-dshot-escs) has a quick overview on the DShot protocol, list of the dshot command codes (which shd be sourced somewhere in the [betaflight repo](https://github.com/betaflight/betaflight)), and implmenetation overviews using scp and dma. 
 - [This post](https://blck.mn/2016/11/dshot-the-new-kid-on-the-block/) has a simple explanation of dshot with a few examples
 - [DShot - the missing handbook](https://brushlesswhoop.com/dshot-and-bidirectional-dshot/) has supported hw, dshot frame example, arming, telemetry, bi-directional dshot
+- [rcgroups DShot thread](https://www.rcgroups.com/forums/showthread.php?2756129-Dshot-testing-a-new-digital-parallel-ESC-throttle-signal)
 
 ### Telemetry using UART
 
@@ -200,7 +201,7 @@ LLLL LLLL LLHH LLHH
 - [Pico Advanced UART example with RX interrupt](https://github.com/raspberrypi/pico-examples/blob/master/uart/uart_advanced/uart_advanced.c)
 - [Betaflight's implementation](https://github.com/betaflight/betaflight/blob/master/src/main/sensors/esc_sensor.c)
 - [This post on BLHeli bitdump](https://github.com/bitdump/BLHeli/issues/431) mentions to use a 1k pull-up resistor to VCC to decrease error rate
-- 
+- [UART with DMA and IRQ](https://forums.raspberrypi.com/viewtopic.php?p=2022767&hilit=pico+reset+timer#p2022767) this post may be useful for a more efficient implementation
 
 
 ### Other
@@ -216,3 +217,6 @@ LLLL LLLL LLHH LLHH
 
 - [Android App for BLHeli 32](https://www.rcgroups.com/forums/showthread.php?3143134-Android-APP-for-BLHeli_32)
 - [Betaflight wiki](https://github.com/betaflight/betaflight/wiki)
+- [i programmer](https://www.i-programmer.info/programming/hardware/14849-the-pico-in-c-basic-pwm.html?start=1) had a good primer on PWM with the Pico
+-  A good explanation of using a [dac with dma](https://vanhunteradams.com/Pico/DAC/DMA_DAC.html)
+-  The ESC we are testing on is *Little Bee CloudPhoenix 50A ESC BLHeli32 (3-6S)* from [hobbyrc](https://www.hobbyrc.co.uk/little-bee-cloudphoenix-50a-esc-blheli32-3-6s)
