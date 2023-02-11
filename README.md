@@ -61,6 +61,9 @@ Dependency Graph:
 ```
 
 ## To Do
+- [ ] Setup a UART port
+- [ ] use a simple dshot cmd with telemetry to see if uart outputs
+
 - [ ] Convert `dshot/` module to just a header file using static inlines (make sure to check it works with the unit tests)
 - [ ] Move `config.h` to `tts/dshotglobals.h` . Wrap variables in a namespace and remove prefix `DSHOT_` (a bit difficult because dshot namespace already exists)
 - [ ] `tts.h` can be renamed `dshothw.h`?
@@ -122,6 +125,21 @@ For example, to make the motors beep the DShot frame is constructed as follows:
 ### Interesting Aside
 
 It takes some time to calculate and send a dshot frame. To mitigate the effect of calculation, the implementation can use two buffers to store the DMA frame: a main buffer to store the current frame being sent by DMA, and a second buffer to store the next frame. This second buffer is only used if DMA is still sending the current frame, otherwise we default to storing the next frame in the main buffer. Further optimisation can be done by checking if the current dshot code and telem are the same as the next one, in which case there is no need to recalculate the frame. 
+
+---
+### Telemetry
+UART port
+Returns 10 8-bit bytes sent with 115200 baud and 3.6V.
+Byte 0: Temperature 
+Byte 1: Voltage high byte
+Byte 2: Voltage low byte
+Byte 3: Current high byte
+Byte 4: Current low byte
+Byte 5: Consumption high byte
+Byte 6: Consumption low byte
+Byte 7: Rpm high byte
+Byte 8: Rpm low byte
+Byte 9: 8-bit CRC
 
 ---
 ## Thrust Test Stand
