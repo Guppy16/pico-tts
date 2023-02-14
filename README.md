@@ -64,6 +64,7 @@ Dependency Graph:
 - [ ] Setup a UART port
 - [ ] use a simple dshot cmd with telemetry to see if uart outputs
 - [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be). Otherwise, it may be better for uart interrupt to have a higher priority(!)
+- [ ] Add unit tests for converting functions that interpret uart telem data (e.g. crc, unit conversions)
 
 
 - [ ] Convert `dshot/` module to just a header file using static inlines (make sure to check it works with the unit tests)
@@ -235,6 +236,16 @@ Possible pico telemetry:
 [Original RC Groups post on dshot](https://www.rcgroups.com/forums/showthread.php?2756129-Dshot-testing-a-new-digital-parallel-ESC-throttle-signal)
 - [SiieeFPV](https://www.youtube.com/watch?v=fNLxHWd0Bvg) has a YT vid explaining DMA implementation on a *Kinetis K66*. This vid was a useful in understanding what was needed for our implementation. 
 
+
+### Telemetry using UART
+
+- [Kiss ESC Telemetry Datasheet](http://www.rcgroups.com/forums/showatt.php?attachmentid=8524039&d=1450424877)
+- [Pico Advanced UART example with RX interrupt](https://github.com/raspberrypi/pico-examples/blob/master/uart/uart_advanced/uart_advanced.c)
+- [Betaflight's implementation](https://github.com/betaflight/betaflight/blob/master/src/main/sensors/esc_sensor.c)
+- [This post on BLHeli bitdump](https://github.com/bitdump/BLHeli/issues/431) mentions to use a 1k pull-up resistor to VCC to decrease error rate
+- 
+
+
 ### Other
 
 - [Wiz IO Pico](https://github.com/Wiz-IO/wizio-pico): seems like an alternative to the Arduino framework used in PlatformIO? More details can be found on their [Baremetal wiki](https://github.com/Wiz-IO/wizio-pico/wiki/BAREMETAL)
@@ -261,3 +272,7 @@ NOTE: (Although we don't use this functionality), a common implmentation measuri
 - Note that we need to check the FW version on the ESC to see if it supports bidir (and EDT). [BLHeli Passthrough](https://github.com/BrushlessPower/BlHeli-Passthrough) is implemented as an Arduino Lib for ESP32 and some Arduinos. A good exercise would be to add support for the Pico. [This](https://github.com/betaflight/betaflight/blob/master/src/main/drivers/serial_escserial.c#L943) may be a betaflight implementation of passthrough, but I couldn't understand it. [BLHeli Suite](https://github.com/bitdump/BLHeli) is also needed.
 - Researching this topic, I came across DMA "burst" mode, which apparently helps in transitioning from send to receive. Not sure, but maybe a starting point can be achieved from [this post](http://forum.chibios.org/viewtopic.php?t=5677)
 - [Chained DMA](https://vanhunteradams.com/Pico/DAC/DMA_DAC.html) may be useful to switch from write to read configuration
+- [Saleae logic analyzer](https://www.az-delivery.uk/en/products/saleae-logic-analyzer). [SW Download](https://support.saleae.com/logic-software/sw-download)
+
+- [Android App for BLHeli 32](https://www.rcgroups.com/forums/showthread.php?3143134-Android-APP-for-BLHeli_32)
+- [Betaflight wiki](https://github.com/betaflight/betaflight/wiki)
