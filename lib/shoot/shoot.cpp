@@ -80,13 +80,13 @@ bool shoot::repeating_send_dshot_frame(struct repeating_timer *rt) {
 
 uint shoot::_telem_baudrate;
 
-void uart_telem_irq(void) {
-  // Clear uart irq?
+void shoot::uart_telem_irq(void) {
+  /// NOTE: uart irq is cleared automatically in hw?
 
   // Read uart
-
-  //
-  printf("uart irq\n");
+  while (uart_is_readable(UART_MOTOR_TELEMETRY)) {
+    printf("UART: %x\n", uart_getc(UART_MOTOR_TELEMETRY));
+  }
 }
 
 bool shoot::repeating_uart_telem_req(struct repeating_timer *rt) {
@@ -105,8 +105,16 @@ void shoot::uart_telemetry_setup() {
   // Set GPIO pin mux for RX
   gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
 
-  // Set pull up
+  /// MAYBE: Set pull up
   // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+
+  // Turn off flow control
+  uart_set_hw_flow(UART_MOTOR_TELEMETRY, false, false);
+
+  /// MAYBE: Set data format
+  // uart_set_format(UART_MOTOR_TELEMETRY, 8, 1, UART_PARITY_NONE);
+
+  /// TODO: Set IRQ
 
   // Setup repeating timer for uart telem request
   shoot::_uart_telem_rt_state = alarm_pool_add_repeating_timer_us(
@@ -118,15 +126,20 @@ void shoot::uart_telemetry_setup() {
   // check if it has a shared handler
   // check it's priority
 
-  // Add exclusive interrupt handler to uart0 (UART_MOTOR_TELEMETRY), UART0_IRQ
+  // Add exclusive interrupt handler
+  irq_set_exclusive_handler(UART_MOTOR_IRQ, shoot::uart_telem_irq);
 
-  // Enable uart interrupt (uart_set_irq_enables)
+  irq_set_enabled(UART_MOTOR_IRQ, true);
+
+  // Enable uart interrupt on rx
+  uart_set_irq_enables(UART_MOTOR_TELEMETRY, true, false);
 }
 
 void shoot::print_send_frame_rt_setup() {
   printf("\nRepeating Timer Config\n");
   printf("DMA Repeating Timer Setup: %d\n", shoot::_dma_alarm_rt_state);
-  printf("Delay: Expected: %li Actual: %li", DMA_ALARM_PERIOD, shoot::send_frame_rt.delay_us);
+  printf("Delay: Expected: %li Actual: %li", DMA_ALARM_PERIOD,
+         shoot::send_frame_rt.delay_us);
   printf("\tAlarm ID: %i\n", shoot::send_frame_rt.alarm_id);
 }
 
@@ -135,4 +148,12 @@ void shoot::print_uart_telem_setup() {
   printf("Baudrate: %i\n", shoot::_telem_baudrate);
   printf("GPIO Pull Up: %i Down %i\n", gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY),
          gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
+
+  // Check uart rx interrupt
+
+  // check if it has a shared handler
+  // check it's priority
+
+  // Could be useful to check if uart is enabled?
+  printf("UART irq Enabled: %i", irq_is_enabled(UART_MOTOR_IRQ));
 }

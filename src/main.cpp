@@ -147,6 +147,6 @@ int main() {
     if (hx711_get_value_noblock(&hx, &thrust) && thrust) {
       printf("hx711: %li\n", thrust - zero_val);
     }
-    read_telem_uart();
+    // read_telem_uart();
   }
 }

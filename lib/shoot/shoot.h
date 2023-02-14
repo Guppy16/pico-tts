@@ -13,7 +13,8 @@
 #include "tts.h"
 
 #define GPIO_MOTOR_TELEMETRY 13
-#define UART_MOTOR_TELEMETRY uart0 // Note there are only two uarts available
+#define UART_MOTOR_TELEMETRY uart0  // Note there are only two uarts available
+#define UART_MOTOR_IRQ UART0_IRQ    // NOTE: UART0 because above is uart0
 #define BAUDRATE_MOTOR_TELEMETRY 115200
 #define UART_TELEMETRY_PERIOD 1000000 // microseconds
 
