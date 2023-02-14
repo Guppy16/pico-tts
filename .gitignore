@@ -3,3 +3,4 @@
 .archive/
 desktop.ini
 build/
+.venv

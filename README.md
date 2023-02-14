@@ -63,6 +63,8 @@ Dependency Graph:
 ## To Do
 - [ ] Setup a UART port
 - [ ] use a simple dshot cmd with telemetry to see if uart outputs
+- [ ] May be necessary to set irq priority of uart to be lower than DMA. Note the the DMA timer must be sufficiently slow (which it should be).
+
 
 - [ ] Convert `dshot/` module to just a header file using static inlines (make sure to check it works with the unit tests)
 - [ ] Move `config.h` to `tts/dshotglobals.h` . Wrap variables in a namespace and remove prefix `DSHOT_` (a bit difficult because dshot namespace already exists)
