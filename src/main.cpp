@@ -9,9 +9,6 @@
 #include "shoot.h"
 #include "utils.h"
 
-#define GPIO_MOTOR_TELEMETRY 13
-#define UART_MOTOR_TELEMETRY uart0
-
 void read_telem_uart() {
   while (uart_is_readable(UART_MOTOR_TELEMETRY)) {
     printf("UART: %x\n", uart_getc(UART_MOTOR_TELEMETRY));
@@ -98,14 +95,8 @@ int main() {
   // Flash LED on and off 3 times
   utils::flash_led(LED_BUILTIN, 3);
 
-  // --- Setup UART
-  // Initialise uart 0 (NOTE: there are only two available)
-  uint telem_baudrate = uart_init(UART_MOTOR_TELEMETRY, 115200);
-
-  // Set GPIO pin mux for RX
-  gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
-  // Set pull up
-  // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+  // Setup UART
+  tts::uart_telemetry_setup();
 
   // Setup Load cell
   int32_t zero_val = 150622; // Load cell calibration
@@ -116,6 +107,9 @@ int main() {
   hx711_wait_settle(hx711_rate_10);
 
   // Setup DShot
+
+  // Note that PWM needs to be setup first,
+  // because the dma dreq requires tts::pwm_slice_num
   tts::pwm_setup();
   tts::dma_setup();
   shoot::rt_setup();
@@ -127,14 +121,12 @@ int main() {
 
   tts::print_gpio_setup();
   tts::print_dshot_setup();
+  tts::print_pwm_setup();
   tts::print_dma_setup();
+  tts::print_uart_telem_setup();
+
   shoot::print_rt_setup();
   print_load_cell_setup();
-
-  printf("\nTelem Uart Setup\n");
-  printf("Baudrate: %i\n", telem_baudrate);
-  printf("GPIO Pull Up: %i Down %i", gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY),
-         gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 
   printf("Initial throttle: %i\n", shoot::throttle_code);
   printf("Initial telemetry: %i\n", shoot::telemetry);
