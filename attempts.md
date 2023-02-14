@@ -46,6 +46,10 @@ constexpr uint32_t DMA_ALARM_PERIOD = 8000 / 1; // N kHz -> micro secs
 
 void alarm_irq_send_dshot_frame(void)
 {
+
+    // Stop timer interrupt JIC
+    // irq_set_enabled(DMA_ALARM_IRQ, false);
+
     // Clear the alarm irq
     hw_clear_bits(&timer_hw->intr, 1u << DMA_ALARM_NUM);
 

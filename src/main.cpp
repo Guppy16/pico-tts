@@ -95,9 +95,6 @@ int main() {
   // Flash LED on and off 3 times
   utils::flash_led(LED_BUILTIN, 3);
 
-  // Setup UART
-  tts::uart_telemetry_setup();
-
   // Setup Load cell
   int32_t zero_val = 150622; // Load cell calibration
   hx711_t hx;
@@ -108,11 +105,20 @@ int main() {
 
   // Setup DShot
 
+  // Set repeating timer
+  // NOTE: this can be put in main loop to start
+  // repeating timer on key press (e.g. a for arm)
+  shoot::dshot_rt_setup();
+
+  // Setup UART
+  shoot::uart_telemetry_setup();
+  // Setup UART
+  // tts::uart_telemetry_setup();
+
   // Note that PWM needs to be setup first,
   // because the dma dreq requires tts::pwm_slice_num
   tts::pwm_setup();
   tts::dma_setup();
-  shoot::rt_setup();
 
   sleep_ms(1500);
 
@@ -123,9 +129,10 @@ int main() {
   tts::print_dshot_setup();
   tts::print_pwm_setup();
   tts::print_dma_setup();
-  tts::print_uart_telem_setup();
+  // tts::print_uart_telem_setup();
+  shoot::print_uart_telem_setup();
 
-  shoot::print_rt_setup();
+  shoot::print_send_frame_rt_setup();
   print_load_cell_setup();
 
   printf("Initial throttle: %i\n", shoot::throttle_code);

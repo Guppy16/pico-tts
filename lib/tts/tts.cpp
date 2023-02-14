@@ -38,21 +38,6 @@ void tts::dma_setup() {
                           DREQ_PWM_WRAP0 + tts::pwm_slice_num);
 }
 
-// Telemetry
-
-uint tts::_telem_baudrate;
-
-void tts::uart_telemetry_setup() {
-  // Initialise and Set baudrate
-  tts::_telem_baudrate = uart_init(UART_MOTOR_TELEMETRY, 115200);
-
-  // Set GPIO pin mux for RX
-  gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
-
-  // Set pull up
-  // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
-}
-
 // Alarm pool
 
 alarm_pool_t *tts::pico_alarm_pool =
@@ -96,11 +81,4 @@ void tts::print_dma_setup() {
 
   /// TODO:
   // printf("%i", shoot::send_frame_rt.pool->)
-}
-
-void tts::print_uart_telem_setup() {
-  printf("\nUART Telemetry setup\n");
-  printf("Baudrate: %i\n", tts::_telem_baudrate);
-  printf("GPIO Pull Up: %i Down %i\n", gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY),
-         gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 }

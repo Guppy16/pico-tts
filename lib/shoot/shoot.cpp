@@ -11,71 +11,128 @@ uint16_t shoot::telemetry = 0;
 uint16_t shoot::writes_to_dma_buffer = 0;
 uint16_t shoot::writes_to_temp_dma_buffer = 0;
 
-bool shoot::dma_alarm_rt_state = false;
+bool shoot::_dma_alarm_rt_state = false;
 struct repeating_timer shoot::send_frame_rt;
 
-void shoot::rt_setup() {
-    shoot::dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(
-        tts::pico_alarm_pool, DMA_ALARM_PERIOD,
-        shoot::repeating_send_dshot_frame, NULL, &shoot::send_frame_rt);
-}
+bool shoot::_uart_telem_rt_state = false;
+struct repeating_timer shoot::uart_telem_req_rt;
 
-void shoot::print_rt_setup()
-{
-    printf("\nDMA Repeating Timer Setup: %d\n", shoot::dma_alarm_rt_state);
-    printf("Delay: %li", shoot::send_frame_rt.delay_us);
-    printf("\tAlarm ID: %i\n", shoot::send_frame_rt.alarm_id);
+void shoot::dshot_rt_setup() {
+  shoot::_dma_alarm_rt_state = alarm_pool_add_repeating_timer_us(
+      tts::pico_alarm_pool, DMA_ALARM_PERIOD, shoot::repeating_send_dshot_frame,
+      NULL, &shoot::send_frame_rt);
 }
 
 void shoot::send_dshot_frame(bool debug) {
-    // Stop timer interrupt JIC
-    // irq_set_enabled(DMA_ALARM_IRQ, false);
+  // Stop timer interrupt JIC
+  // irq_set_enabled(DMA_ALARM_IRQ, false);
 
-    // TODO: add more verbose debugging
-    // NOTE: caution as this function is executed as an interrupt service
-    // routine
-    if (debug) {
-        printf("Throttle Code: %i", shoot::throttle_code);
-    }
+  // TODO: add more verbose debugging
+  // NOTE: caution as this function is executed as an interrupt service
+  // routine
+  if (debug) {
+    printf("Throttle Code: %i", shoot::throttle_code);
+  }
 
-    // IF DMA is busy, then write to temp_dma_buffer
-    // AND wait for DMA buffer to finish transfer
-    // (NOTE: waiting is risky because this is used in an interrupt)
-    // Then copy the temp buffer to dma buffer
-    if (dma_channel_is_busy(tts::dma_channel)) {
-        DShot::command_to_pwm_buffer(shoot::throttle_code, shoot::telemetry,
-                                     shoot::temp_dma_buffer, DSHOT_LOW,
-                                     DSHOT_HIGH, tts::pwm_channel);
-        dma_channel_wait_for_finish_blocking(tts::dma_channel);
-        memcpy(shoot::dma_buffer, shoot::temp_dma_buffer,
-               DSHOT_FRAME_LENGTH * sizeof(uint32_t));
-        ++shoot::writes_to_temp_dma_buffer;
-    }
-    // ELSE write to dma_buffer directly
-    else {
-        DShot::command_to_pwm_buffer(shoot::throttle_code, shoot::telemetry,
-                                     shoot::dma_buffer, DSHOT_LOW, DSHOT_HIGH,
-                                     tts::pwm_channel);
-        ++shoot::writes_to_dma_buffer;
-    }
-    // Re-configure DMA and trigger transfer
-    dma_channel_configure(
-        tts::dma_channel, &tts::dma_config,
-        &pwm_hw->slice[tts::pwm_slice_num].cc,  // Write to PWM counter compare
-        shoot::dma_buffer, DSHOT_FRAME_LENGTH, true);
+  // IF DMA is busy, then write to temp_dma_buffer
+  // AND wait for DMA buffer to finish transfer
+  // Then copy the temp buffer to dma buffer
+  // (NOTE: waiting is risky because this is used in an interrupt)
 
-    // Restart interrupt
-    // irq_set_enabled(DMA_ALARM_IRQ, true);
-    // NOTE: Alarm is only 32 bits
-    // so, be careful if delay is more than that
-    // uint64_t target = timer_hw->timerawl + DMA_ALARM_PERIOD;
-    // timer_hw->alarm[DMA_ALARM_NUM] = (uint32_t)target;
+  if (dma_channel_is_busy(tts::dma_channel)) {
+    DShot::command_to_pwm_buffer(shoot::throttle_code, shoot::telemetry,
+                                 shoot::temp_dma_buffer, DSHOT_LOW, DSHOT_HIGH,
+                                 tts::pwm_channel);
+    dma_channel_wait_for_finish_blocking(tts::dma_channel);
+    memcpy(shoot::dma_buffer, shoot::temp_dma_buffer,
+           DSHOT_FRAME_LENGTH * sizeof(uint32_t));
+    ++shoot::writes_to_temp_dma_buffer;
+  }
+  // ELSE write to dma_buffer directly
+  else {
+    DShot::command_to_pwm_buffer(shoot::throttle_code, shoot::telemetry,
+                                 shoot::dma_buffer, DSHOT_LOW, DSHOT_HIGH,
+                                 tts::pwm_channel);
+    ++shoot::writes_to_dma_buffer;
+  }
+  // Re-configure DMA and trigger transfer
+  dma_channel_configure(
+      tts::dma_channel, &tts::dma_config,
+      &pwm_hw->slice[tts::pwm_slice_num].cc, // Write to PWM counter compare
+      shoot::dma_buffer, DSHOT_FRAME_LENGTH, true);
+
+  // Reset telemetry to limit the number of requests
+  // NOTE: should telem be volatile now?
+  shoot::telemetry = 0;
 }
 
 bool shoot::repeating_send_dshot_frame(struct repeating_timer *rt) {
-    // Send DShot frame
-    shoot::send_dshot_frame(false);
-    // CAN DO: Use rt-> for debug
-    // Return true so that timer repeats
-    return true;
+  /// NOTE: Can use Use rt->... for debug
+
+  // Send DShot frame
+  shoot::send_dshot_frame(false);
+
+  // Return true so that timer repeats
+  return true;
+}
+
+// Telemetry
+
+uint shoot::_telem_baudrate;
+
+void uart_telem_irq(void) {
+  // Clear uart irq?
+
+  // Read uart
+
+  //
+  printf("uart irq\n");
+}
+
+bool shoot::repeating_uart_telem_req(struct repeating_timer *rt) {
+  // Set telemetry
+  shoot::telemetry = 1;
+
+  // return true to repeat timer
+  return true;
+}
+
+void shoot::uart_telemetry_setup() {
+  // Initialise and Set baudrate
+  shoot::_telem_baudrate =
+      uart_init(UART_MOTOR_TELEMETRY, BAUDRATE_MOTOR_TELEMETRY);
+
+  // Set GPIO pin mux for RX
+  gpio_set_function(GPIO_MOTOR_TELEMETRY, GPIO_FUNC_UART);
+
+  // Set pull up
+  // gpio_pull_up(GPIO_MOTOR_TELEMETRY);
+
+  // Setup repeating timer for uart telem request
+  shoot::_uart_telem_rt_state = alarm_pool_add_repeating_timer_us(
+      tts::pico_alarm_pool, UART_TELEMETRY_PERIOD,
+      shoot::repeating_uart_telem_req, NULL, &shoot::uart_telem_req_rt);
+
+  /// -- TODO:
+  /// MAYBES:
+  // check if it has a shared handler
+  // check it's priority
+
+  // Add exclusive interrupt handler to uart0 (UART_MOTOR_TELEMETRY), UART0_IRQ
+
+  // Enable uart interrupt (uart_set_irq_enables)
+}
+
+void shoot::print_send_frame_rt_setup() {
+  printf("\nRepeating Timer Config\n");
+  printf("DMA Repeating Timer Setup: %d\n", shoot::_dma_alarm_rt_state);
+  printf("Delay: Expected: %li Actual: %li", DMA_ALARM_PERIOD, shoot::send_frame_rt.delay_us);
+  printf("\tAlarm ID: %i\n", shoot::send_frame_rt.alarm_id);
+}
+
+void shoot::print_uart_telem_setup() {
+  printf("\nUART Telemetry setup\n");
+  printf("Baudrate: %i\n", shoot::_telem_baudrate);
+  printf("GPIO Pull Up: %i Down %i\n", gpio_is_pulled_up(GPIO_MOTOR_TELEMETRY),
+         gpio_is_pulled_down(GPIO_MOTOR_TELEMETRY));
 }
