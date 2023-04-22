@@ -5,10 +5,11 @@ include(lib/extern/pico-sdk/pico_sdk_init.cmake)
 # include(pico_sdk_import.cmake)
 # include(pico_extras_import.cmake)
 
-project(dshot_test LANGUAGES C CXX ASM)
+project(pico_tts LANGUAGES C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_FLAGS "-isystem /usr/include/c++/9/") # Some clangd setting
 
 add_compile_options(
   -Wall
@@ -19,18 +20,14 @@ add_compile_options(
 
 pico_sdk_init()
 
-set(DSHOT_FILES ./lib/shoot/shoot.cpp ./lib/tts/tts.cpp ./lib/utils/utils.cpp
-                ./lib/dshot/dshot.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp
+                               ./lib/extern/hx711-pico-c/src/hx711.c
+                               lib/utils/utils.cpp
+                               )
 
-add_executable(${PROJECT_NAME} src/main.cpp ${DSHOT_FILES}
-                               ./lib/extern/hx711-pico-c/src/hx711.c)
-
-include_directories(./lib/shoot)
-include_directories(./lib/tts)
+add_subdirectory(lib/extern/pico-dshot dshot-pico)
 include_directories(./lib/utils)
-include_directories(./lib/dshot)
 include_directories(./lib/extern/hx711-pico-c/include)
-include_directories(./include)
 
 target_link_libraries(
   ${PROJECT_NAME}
@@ -40,7 +37,9 @@ target_link_libraries(
   hardware_dma
   hardware_pio
   hardware_exception
-  pico_multicore)
+  pico_multicore
+  dshot-pico
+  )
 
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)

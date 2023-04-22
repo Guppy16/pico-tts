@@ -1,5 +1,13 @@
+# Playground folders
+.idea/
+.archive/
+
 .pio
 .vscode/
-.archive/
-desktop.ini
 build/
+
+# Clangd
+.cache/
+
+# OneDrive
+desktop.ini
