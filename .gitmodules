@@ -7,3 +7,6 @@
 [submodule "lib/extern/Unity"]
 	path = lib/extern/Unity
 	url = https://github.com/ThrowTheSwitch/Unity.git
+[submodule "lib/extern/pico-dshot"]
+	path = lib/extern/pico-dshot
+	url = git@github.com:Guppy16/pico-dshot.git
